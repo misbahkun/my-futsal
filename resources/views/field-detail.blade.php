@@ -31,23 +31,53 @@
                 class="cursor-pointer">Rules</li>
         </ul>
 
-        <div x-show="active === 'Schedule'">
-
+        <div x-show="active === 'Schedule'" x-data="{
+            date: '{{ date('Y-m-d') }}',
+            status: {{ json_encode($status) }},
+            openDatePicker() {
+                this.$refs.dateInput.showPicker();
+            },
+            formatDate(date, format = 'default') {
+                if (!date) return 'Pilih Tanggal';
+                const [year, month, day] = date.split('-');
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dateObj = new Date(year, month - 1, day);
+                if (format === 'schedule') {
+                    return `${day} ${months[parseInt(month) - 1]}`;
+                }
+                if (format === 'day') {
+                    return days[dateObj.getDay()];
+                }
+                return `${day}-${month}-${year}`;
+            },
+            getNextDates(date, count) {
+                const dates = [];
+                const [year, month, day] = date.split('-');
+                const startDate = new Date(year, month - 1, day);
+                for (let i = 1; i <= count; i++) {
+                    const nextDate = new Date(startDate);
+                    nextDate.setDate(startDate.getDate() + i);
+                    const formattedDate = nextDate.toISOString().split('T')[0];
+                    dates.push(formattedDate);
+                }
+                return dates;
+            },
+            timeSlots: [
+                '22:00 - 00:00',
+                '20:00 - 22:00',
+                '18:00 - 20:00',
+                '16:00 - 18:00',
+                '14:00 - 16:00',
+                '12:00 - 14:00',
+                '10:00 - 12:00',
+                '08:00 - 10:00',
+            ]
+        }">
             <div class="grid grid-cols-1 gap-20 sm:grid-cols-2 sm:gap-32 2xl:gap-52">
                 <div>
                     <h1 class="mb-5 font-bold text-lg">Pilih Tanggal Booking :</h1>
-                    <div x-data="{
-                        date: '{{ date('Y-m-d') }}',
-                        openDatePicker() {
-                            this.$refs.dateInput.showPicker();
-                        },
-                        formatDate(date) {
-                            if (!date) return 'Pilih Tanggal';
-                            const [year, month, day] = date.split('-');
-                            return `${day}-${month}-${year}`;
-                        }
-                    }"
-                        class="relative flex items-center justify-between space-x-2 bg-white rounded-xl px-4 cursor-pointer shadow-lg outline"
+                    <div class="relative flex items-center justify-between space-x-2 bg-white rounded-xl px-4 cursor-pointer shadow-lg outline"
                         @click="openDatePicker()">
                         <span class="font-bold mx-auto" x-text="formatDate(date)"></span>
                         <img src="{{ asset('storage/calendar.png') }}" alt="calendar">
@@ -80,11 +110,34 @@
                     </div>
                 </div>
             </div>
-
+            <div class="grid grid-cols-6 gap-4 mt-8">
+                <template x-for="nextDate in getNextDates(date, 6)">
+                    <div class="border border-black rounded-lg bg-[#FFF6F6] p-6 items-center flex flex-col">
+                        <p class="font-bold text-lg" x-text="formatDate(nextDate, 'schedule')"></p>
+                        <p class="text-sm text-my-red font-semibold" x-text="formatDate(nextDate, 'day')"></p>
+                    </div>
+                </template>
+            </div>
+            <div class="grid grid-cols-6 gap-4 mt-8">
+                <template x-for="timeSlot in timeSlots">
+                    <template x-for="nextDate in getNextDates(date, 6)">
+                        <div class="border border-black rounded-lg p-4 flex flex-col"
+                            :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB]' : 'bg-[#FFF6F6]'">
+                            <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')"></p>
+                            <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
+                            <p class="text-lg font-semibold text-center">Rp 125.000</p>
+                            <p class="text-sm font-semibold text-center"
+                            :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
+                                x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
+                            </p>
+                        </div>
+                    </template>
+                </template>
+            </div>
         </div>
 
         <div x-show="active === 'Rules'">
-            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
+            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 gap-10 2xl:gap-7">
                 <div class="bg-my-grey rounded-xl py-6 px-10">
                     <p class="text-my-red font-bold text-lg mb-3">Aturan Venue :</p>
                     <p>- Pemesanan lapangan valid apabila sudah ada konfirmasi dari online booking system, dan harus

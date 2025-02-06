@@ -14,6 +14,7 @@ class Schedule extends Model
         'price',
         'field_id',
         'user_id',
+        'time_slots',
     ];
 
     public function field()
