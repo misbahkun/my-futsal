@@ -61,13 +61,20 @@
                 </div>
                 <div>
                     <h1 class="mb-5 font-bold text-lg">Pilih Lapangan :</h1>
-                    <div x-data="{ selectedField: '{{ $field->name }}' }"
+                    <div x-data="{ selectedField: '{{ $field->name }}', selectedFieldId: '{{ $field->id }}' }"
                         class="relative flex items-center justify-between py-1.5 space-x-2 bg-white rounded-xl px-4 cursor-pointer shadow-lg outline">
                         <span class="font-bold mx-auto" x-text="selectedField"></span>
                         <img src="{{ asset('storage/chevron-down.png') }}" alt="chevron">
-                        <select x-model="selectedField" class="absolute inset-0 opacity-0 cursor-pointer">
-                            @foreach ($fields as $field)
-                                <option value="{{ $field->name }}">{{ $field->name }}</option>
+                        <select x-model="selectedFieldId"
+                            @change="
+                                selectedField = Array.from($event.target.selectedOptions).find(option => option.value == selectedFieldId).text;
+                                window.location.href = '{{ route('field.detail', '') }}/' + selectedFieldId;
+                            "
+                            class="absolute inset-0 opacity-0 cursor-pointer">
+                            @foreach ($fields as $f)
+                                <option value="{{ $f->id }}" {{ $f->id == $field->id ? 'selected' : '' }}>
+                                    {{ $f->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
