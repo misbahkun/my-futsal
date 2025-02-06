@@ -297,42 +297,33 @@ class DatabaseSeeder extends Seeder
 
         $timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00', '20:00 - 22:00', '22:00 - 00:00'];
 
-        $isFirst = true;
-
         foreach ($fields as $field) {
             $minPrice = $venuePrices[$field->venue_id];
-            $price = $isFirst ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
-            $selectedTimeSlots = array_rand(array_flip($timeSlots), 2); // Pilih 2 slot waktu secara acak
             $bookedSlots = [];
-
-            // Buat slot waktu yang booked
-            foreach ($selectedTimeSlots as $timeSlot) {
-                Schedule::create([
-                    'date' => Carbon::today()->toDateString(),
-                    'time_slots' => $timeSlot,
-                    'status' => 'booked',
-                    'price' => $price,
-                    'field_id' => $field->id,
-                    'user_id' => 1,
-                ]);
-                $bookedSlots[] = $timeSlot;
-            }
-
-            // Buat slot waktu yang available
-            foreach ($timeSlots as $timeSlot) {
-                if (!in_array($timeSlot, $bookedSlots)) {
+        
+            $selectedTimeSlots = array_rand(array_flip($timeSlots), 4);
+        
+            for ($i = 0; $i < 8; $i++) {
+                $price = $i == 0 ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
+                $timeSlot = $timeSlots[$i % count($timeSlots)];
+        
+                if (!Schedule::where('field_id', $field->id)
+                    ->where('date', Carbon::today()->toDateString())
+                    ->where('time_slots', $timeSlot)
+                    ->exists()) {
                     Schedule::create([
                         'date' => Carbon::today()->toDateString(),
                         'time_slots' => $timeSlot,
-                        'status' => 'available',
+                        'status' => in_array($timeSlot, $selectedTimeSlots) ? 'booked' : 'available',
                         'price' => $price,
                         'field_id' => $field->id,
-                        'user_id' => 1,
+                        'user_id' => rand(0, 1) ? 1 : null,
                     ]);
+                    if (in_array($timeSlot, $selectedTimeSlots)) {
+                        $bookedSlots[] = $timeSlot;
+                    }
                 }
             }
-
-            $isFirst = false;
         }
 
         $galleryImages = ['gallery-inspire-arena-sulut.png', 'gallery-inspire-arena-sulut2.png', 'gallery-inspire-arena-sulut3.png'];

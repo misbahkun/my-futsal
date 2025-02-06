@@ -34,6 +34,10 @@
         <div x-show="active === 'Schedule'" x-data="{
             date: '{{ date('Y-m-d') }}',
             status: {{ json_encode($status) }},
+            prices: {{ json_encode($prices) }},
+            formatPrice(price) {
+                return 'Rp ' + price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            },
             openDatePicker() {
                 this.$refs.dateInput.showPicker();
             },
@@ -125,9 +129,10 @@
                             :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB]' : 'bg-[#FFF6F6]'">
                             <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')"></p>
                             <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
-                            <p class="text-lg font-semibold text-center">Rp 125.000</p>
+                            <p class="text-lg font-semibold text-center"
+                                x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
                             <p class="text-sm font-semibold text-center"
-                            :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
+                                :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
                                 x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
                             </p>
                         </div>
