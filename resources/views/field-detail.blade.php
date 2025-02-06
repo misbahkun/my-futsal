@@ -78,7 +78,7 @@
                 '08:00 - 10:00',
             ]
         }">
-            <div class="grid grid-cols-1 gap-20 sm:grid-cols-2 sm:gap-32 2xl:gap-52">
+            <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-32 2xl:gap-52">
                 <div>
                     <h1 class="mb-5 font-bold text-lg">Pilih Tanggal Booking :</h1>
                     <div class="relative flex items-center justify-between space-x-2 bg-white rounded-xl px-4 cursor-pointer shadow-lg outline"
@@ -114,30 +114,33 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-6 gap-4 mt-8">
-                <template x-for="nextDate in getNextDates(date, 6)">
-                    <div class="border border-black rounded-lg bg-[#FFF6F6] p-6 items-center flex flex-col">
-                        <p class="font-bold text-lg" x-text="formatDate(nextDate, 'schedule')"></p>
-                        <p class="text-sm text-my-red font-semibold" x-text="formatDate(nextDate, 'day')"></p>
-                    </div>
-                </template>
-            </div>
-            <div class="grid grid-cols-6 gap-4 mt-8">
-                <template x-for="timeSlot in timeSlots">
+            <div class="overflow-x-auto">
+                <div class="grid grid-cols-6 gap-4 mt-8 min-w-max">
                     <template x-for="nextDate in getNextDates(date, 6)">
-                        <div class="border border-black rounded-lg p-4 flex flex-col"
-                            :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB]' : 'bg-[#FFF6F6]'">
-                            <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')"></p>
-                            <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
-                            <p class="text-lg font-semibold text-center"
-                                x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
-                            <p class="text-sm font-semibold text-center"
-                                :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
-                                x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
-                            </p>
+                        <div class="border border-black rounded-lg bg-[#FFF6F6] py-6 px-9 sm:px-9.9 flex flex-col">
+                            <p class="font-bold text-lg text-center" x-text="formatDate(nextDate, 'schedule')"></p>
+                            <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')"></p>
                         </div>
                     </template>
-                </template>
+                </div>
+                <div class="grid grid-cols-6 gap-4 mt-8 min-w-max">
+                    <template x-for="timeSlot in timeSlots">
+                        <template x-for="nextDate in getNextDates(date, 6)">
+                            <div class="border border-black rounded-lg p-4 flex flex-col"
+                                :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB]' : 'bg-[#FFF6F6]'">
+                                <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')">
+                                </p>
+                                <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
+                                <p class="text-lg font-semibold text-center"
+                                    x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
+                                <p class="text-sm font-semibold text-center"
+                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
+                                    x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
+                                </p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
             </div>
         </div>
 
