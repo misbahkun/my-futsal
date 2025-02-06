@@ -297,8 +297,11 @@ class DatabaseSeeder extends Seeder
 
         $timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00', '20:00 - 22:00', '22:00 - 00:00'];
 
+        $isFirst = true;
+
         foreach ($fields as $field) {
             $minPrice = $venuePrices[$field->venue_id];
+            $price = $isFirst ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
             $selectedTimeSlots = array_rand(array_flip($timeSlots), 2); // Pilih 2 slot waktu secara acak
             $bookedSlots = [];
 
@@ -308,7 +311,7 @@ class DatabaseSeeder extends Seeder
                     'date' => Carbon::today()->toDateString(),
                     'time_slots' => $timeSlot,
                     'status' => 'booked',
-                    'price' => $minPrice,
+                    'price' => $price,
                     'field_id' => $field->id,
                     'user_id' => 1,
                 ]);
@@ -322,12 +325,14 @@ class DatabaseSeeder extends Seeder
                         'date' => Carbon::today()->toDateString(),
                         'time_slots' => $timeSlot,
                         'status' => 'available',
-                        'price' => $minPrice,
+                        'price' => $price,
                         'field_id' => $field->id,
                         'user_id' => 1,
                     ]);
                 }
             }
+
+            $isFirst = false;
         }
 
         $galleryImages = ['gallery-inspire-arena-sulut.png', 'gallery-inspire-arena-sulut2.png', 'gallery-inspire-arena-sulut3.png'];
