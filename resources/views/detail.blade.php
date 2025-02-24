@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" x-data="{ active: 'Lapangan' }">
+    <div class="mx-auto max-w-6xl" x-data="{ active: 'Lapangan' }">
         <div class="relative">
             <img src="{{ asset('storage/' . $venue->large_image) }}" class="mt-6" alt="{{ $venue->large_image }}">
             <img src="{{ asset('storage/' . $venue->logo_image) }}" class="absolute bottom-3 left-10 m-4 w-24"
@@ -59,9 +59,10 @@
                                 Rp {{ number_format($minPrice, 0, ',', '.') }} ~ Rp
                                 {{ number_format($maxPrice, 0, ',', '.') }}
                             </p>
-                            <button
-                                class="bg-my-red shadow-xl font-bold ms-2 w-[18.75rem] rounded-xl text-white py-3 px-5">Lihat
-                                Jadwal</button>
+                            <a href="{{ route('field.detail', ['id' => $field->id]) }}">
+                                <button
+                                    class="bg-my-red shadow-xl font-bold ms-2 w-[18.75rem] rounded-xl text-white py-3 px-5">Lihat Jadwal</button>
+                            </a>
                         </div>
                     </div>
                 @endforeach
@@ -207,7 +208,8 @@
                         <div class="flex flex-col flex-1">
                             <p class="text-my-red font-semibold">Masker dan Cuci Tangan :</p>
                             <p>Wajib menggunakan <span class="hidden sm:inline"><br></span>
-                                masker, dan mencuci <span class="hidden sm:inline"><br></span> tangan sebelum dan <span class="hidden sm:inline"><br></span> sesudah bermain.</p>
+                                masker, dan mencuci <span class="hidden sm:inline"><br></span> tangan sebelum dan <span
+                                    class="hidden sm:inline"><br></span> sesudah bermain.</p>
                         </div>
                         <div class="flex flex-col flex-1">
                             <p class="text-my-red font-semibold">Suhu Tubuh :</p>
@@ -224,7 +226,8 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
                 @foreach ($venue->galleries as $gallery)
                     <div class="flex flex-col flex-1">
-                        <img class="h-full object-cover rounded-lg" src="{{ asset('storage/' . $gallery->image) }}" alt="{{ $venue->name }}">
+                        <img class="h-full object-cover rounded-lg" src="{{ asset('storage/' . $gallery->image) }}"
+                            alt="{{ $venue->name }}">
                         <p class="font-semibold mt-1">{{ $venue->name }}</p>
                     </div>
                 @endforeach

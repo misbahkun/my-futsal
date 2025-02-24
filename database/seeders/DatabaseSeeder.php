@@ -10,6 +10,7 @@ use App\Models\Field;
 use App\Models\Gallery;
 use App\Models\Schedule;
 use App\Models\VenueSports;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -283,11 +284,7 @@ class DatabaseSeeder extends Seeder
             'venue_id' => $jsFutsal->id,
         ]);
 
-        $fields = [
-            $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10,
-            $field11, $field12, $field13, $field14, $field15, $field16, $field17, $field18, $field19, $field20,
-            $field21, $field22, $field23, $field24
-        ];
+        $fields = [$field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $field16, $field17, $field18, $field19, $field20, $field21, $field22, $field23, $field24];
 
         $venuePrices = [
             $inspireArenaSulut->id => 125000,
@@ -298,26 +295,39 @@ class DatabaseSeeder extends Seeder
             $jsFutsal->id => 110000,
         ];
 
+        $timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00', '20:00 - 22:00', '22:00 - 00:00'];
+
         foreach ($fields as $field) {
             $minPrice = $venuePrices[$field->venue_id];
-            for ($i = 1; $i <= 10; $i++) {
-                $status = $i % 2 == 0 ? 'booked' : 'available';
-                $price = $i == 1 ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
-                Schedule::create([
-                    'date' => '2025-01-30',
-                    'status' => $status,
-                    'price' => $price,
-                    'field_id' => $field->id,
-                    'user_id' => $status === 'booked' ? 1 : null,
-                ]);
+            $bookedSlots = [];
+        
+            $selectedTimeSlots = array_rand(array_flip($timeSlots), 4);
+        
+            for ($i = 0; $i < 8; $i++) {
+                $price = $i == 0 ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
+                $timeSlot = $timeSlots[$i % count($timeSlots)];
+        
+                if (!Schedule::where('field_id', $field->id)
+                    ->where('date', Carbon::today()->toDateString())
+                    ->where('time_slots', $timeSlot)
+                    ->exists()) {
+                    Schedule::create([
+                        'date' => Carbon::today()->toDateString(),
+                        'time_slots' => $timeSlot,
+                        'status' => in_array($timeSlot, $selectedTimeSlots) ? 'booked' : 'available',
+                        'price' => $price,
+                        'field_id' => $field->id,
+                        'user_id' => rand(0, 1) ? 1 : null,
+                    ]);
+                    if (in_array($timeSlot, $selectedTimeSlots)) {
+                        $bookedSlots[] = $timeSlot;
+                    }
+                }
             }
         }
-        $galleryImages = [
-            'gallery-inspire-arena-sulut.png',
-            'gallery-inspire-arena-sulut2.png',
-            'gallery-inspire-arena-sulut3.png'
-        ];
-        
+
+        $galleryImages = ['gallery-inspire-arena-sulut.png', 'gallery-inspire-arena-sulut2.png', 'gallery-inspire-arena-sulut3.png'];
+
         foreach ($galleryImages as $image) {
             Gallery::create([
                 'venue_id' => $inspireArenaSulut->id,
