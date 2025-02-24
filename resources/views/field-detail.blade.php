@@ -10,11 +10,11 @@
 @endsection
 
 @section('content')
-    <div class="mx-auto max-w-6xl" x-data="{ active: 'Schedule' }">
+    <div class="mx-5 sm:mx-auto sm:max-w-6xl" x-data="{ active: 'Schedule' }">
         <div class="relative">
             <img src="{{ asset('storage/' . $field->venue->large_image) }}" class="mt-6"
                 alt="{{ $field->venue->large_image }}">
-            <img src="{{ asset('storage/' . $field->venue->logo_image) }}" class="absolute bottom-3 left-10 m-4 w-24"
+            <img src="{{ asset('storage/' . $field->venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
                 alt="{{ $field->venue->logo_image }}">
         </div>
         <h1 class="font-bold text-2xl mt-5 mb-1">{{ $field->name }}</h1>
@@ -24,7 +24,7 @@
         {{-- Komponen share --}}
         @include('components.share')
 
-        <ul class="flex items-center my-16 gap-x-20 font-bold border-t border-b w-full">
+        <ul class="flex justify-center items-center my-16 gap-x-20 font-bold border-t border-b w-full">
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'Schedule' }" @click="active = 'Schedule'"
                 class="cursor-pointer">Schedule</li>
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'Rules' }" @click="active = 'Rules'"
@@ -117,7 +117,7 @@
             <div class="overflow-x-auto">
                 <div class="grid grid-cols-6 gap-4 mt-8 min-w-max">
                     <template x-for="nextDate in getNextDates(date, 6)">
-                        <div class="border border-black rounded-lg bg-[#FFF6F6] py-6 px-9 sm:px-9.9 flex flex-col">
+                        <div class="border border-black rounded-lg bg-[#FFF6F6] py-6 px-7 sm:px-9.9 flex flex-col">
                             <p class="font-bold text-lg text-center" x-text="formatDate(nextDate, 'schedule')"></p>
                             <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')"></p>
                         </div>
@@ -252,5 +252,5 @@
     @endsection
 
     @section('footer')
-        @include('components.footer')
+        @include('components.footer', ['maxWidth' => 'max-w-6xl'])
     @endsection

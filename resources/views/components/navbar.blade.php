@@ -3,7 +3,7 @@
         <div class="flex h-16 items-center justify-between">
             <div class="flex items-center">
                 <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="My Futsal Logo">
-                <span class="font-bold">My Futsal</span>
+                <span class="font-bold"><a href="{{ route('home') }}">My Futsal</a></span>
             </div>
             <div class="hidden md:block">
                 <div class="ml-4 flex items-center md:ml-6 font-bold space-x-6">

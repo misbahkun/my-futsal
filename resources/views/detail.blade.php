@@ -8,10 +8,10 @@
 @endsection
 
 @section('content')
-    <div class="mx-auto max-w-6xl" x-data="{ active: 'Lapangan' }">
+    <div class="mx-5 lg:mx-auto max-w-6xl" x-data="{ active: 'Lapangan' }">
         <div class="relative">
             <img src="{{ asset('storage/' . $venue->large_image) }}" class="mt-6" alt="{{ $venue->large_image }}">
-            <img src="{{ asset('storage/' . $venue->logo_image) }}" class="absolute bottom-3 left-10 m-4 w-24"
+            <img src="{{ asset('storage/' . $venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
                 alt="{{ $venue->logo_image }}">
         </div>
         <h1 class="font-bold text-2xl mt-5">{{ $venue->name }}</h1>
@@ -30,7 +30,7 @@
         {{-- Komponen share --}}
         @include('components.share')
 
-        <ul class="flex justify-center items-center my-16 gap-x-40 font-bold border-t border-b w-full">
+        <ul class="overflow-x-auto flex justify-center items-center my-16 gap-x-10 sm:gap-x-40 font-bold border-t border-b w-full">
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'Lapangan' }" @click="active = 'Lapangan'"
                 class="cursor-pointer">Lapangan</li>
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'About' }" @click="active = 'About'"
@@ -43,16 +43,16 @@
 
         <div x-show="active === 'Lapangan'">
             <h2 class="font-bold text-2xl my-5">Field</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
+            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 gap-10 2xl:grid-cols-3 2xl:gap-x-14 2xl:gap-y-6">
                 @foreach ($venue->fields as $index => $field)
                     @php
                         $prices = $field->schedules->pluck('price')->toArray();
                         $minPrice = !empty($prices) ? min($prices) : 0;
                         $maxPrice = !empty($prices) ? max($prices) : 0;
                     @endphp
-                    <div class="flex flex-col {{ $index % 2 == 1 ? 'ms-auto' : 'me-auto' }} mb-14">
+                    <div class="flex flex-col {{ $index % 2 == 1 ? 'ms-auto' : 'me-auto' }} mb-5 lg:mb-14">
                         <div class="flex flex-col items-center gap-y-4">
-                            <img src="{{ asset('storage/' . $field->image) }}" class="w-[500px] h-[415px]"
+                            <img src="{{ asset('storage/' . $field->image) }}" class="lg:w-[500px] lg:h-[415px]"
                                 alt="{{ $field->name }}">
                             <h3 class="font-bold mb-1 text-lg">{{ $field->name }}</h3>
                             <p class="font-semibold text-grey-56">
@@ -70,7 +70,7 @@
         </div>
 
         <div x-show="active === 'About'">
-            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
+            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 gap-10 2xl:gap-y-9 2xl:gap-x-10">
                 <div class="bg-my-grey rounded-xl py-6 px-10">
                     <p class="text-my-red font-bold text-lg">Deskripsi :</p>
                     <p class="text-my-red font-semibold mt-2">Asatu Area</p>
@@ -164,8 +164,9 @@
                 </div>
             </div>
         </div>
+
         <div x-show="active === 'Rules'">
-            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
+            <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 gap-10 2xl:gap-y-9 2xl:gap-x-10">
                 <div class="bg-my-grey rounded-xl py-6 px-10">
                     <p class="text-my-red font-bold text-lg mb-3">Aturan Venue :</p>
                     <p>- Pemesanan lapangan valid apabila sudah ada konfirmasi dari online booking system, dan harus
