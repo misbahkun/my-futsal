@@ -1,4 +1,4 @@
-<div class="mx-auto {{ $maxWidth ?? "max-w-7xl" }} ">
+<div class="mx-5 sm:mx-auto {{ $maxWidth ?? "max-w-max-w-6.5xl" }} mb-10">
     <div class="grid grid-cols-1 sm:grid-cols-4 my-14 ms-5 sm:ms-0 gap-x-10 sm:gap-x-0 lg:gap-x-60">
         <div class="col-span-1 mt-5">
             <h1 class="font-bold text-lg">COMPANY</h1>
