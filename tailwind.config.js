@@ -23,6 +23,9 @@ export default {
                 'grey-56': 'rgba(26, 23, 23, 0.56)',
                 'my-grey': '#D9D9D9',
             },
+            maxWidth: {
+                'max-w-6.5xl': '75rem'
+            }
         },
     },
     plugins: [],
