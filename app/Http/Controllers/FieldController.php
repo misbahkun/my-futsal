@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Field;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class FieldController extends Controller
 {
