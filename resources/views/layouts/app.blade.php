@@ -12,17 +12,17 @@
 </head>
 
 <body>
-    <div class="min-h-full mb-10">
+    <header>
         @yield('header')
+    </header>
 
-        <main>
-            @yield('content')
-        </main>
+    <main>
+        @yield('content')
+    </main>
 
-        <footer>
-            @yield('footer')
-        </footer>
-    </div>
+    <footer>
+        @yield('footer')
+    </footer>
 </body>
 
 </html>
