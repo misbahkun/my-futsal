@@ -4,13 +4,13 @@
 
 @section('header')
     @include('components.navbar')
-    <img src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
+    <img class="fixed top-16 z-50 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')
-    <div class="mx-5 lg:mx-auto max-w-6xl" x-data="{ active: 'Lapangan' }">
+    <div class="mx-5 mt-24 sm:mx-auto max-w-6xl sm:mt-28" x-data="{ active: 'Lapangan' }">
         <div class="relative">
-            <img src="{{ asset('storage/' . $venue->large_image) }}" class="mt-6" alt="{{ $venue->large_image }}">
+            <img src="{{ asset('storage/' . $venue->large_image) }}" alt="{{ $venue->large_image }}">
             <img src="{{ asset('storage/' . $venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
                 alt="{{ $venue->logo_image }}">
         </div>
@@ -30,7 +30,7 @@
         {{-- Komponen share --}}
         @include('components.share')
 
-        <ul class="overflow-x-auto flex justify-center items-center my-16 gap-x-10 sm:gap-x-40 font-bold border-t border-b w-full">
+        <ul class="overflow-x-auto flex justify-center items-center my-16 gap-x-5 sm:gap-x-40 font-bold border-t border-b w-full">
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'Lapangan' }" @click="active = 'Lapangan'"
                 class="cursor-pointer">Lapangan</li>
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'About' }" @click="active = 'About'"

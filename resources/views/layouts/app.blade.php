@@ -23,6 +23,34 @@
     <footer>
         @yield('footer')
     </footer>
+    <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('cart', {
+                    items: JSON.parse(localStorage.getItem('cart')) || [],
+
+                    addToCart(data) {
+                        if (this.items.some(item => item.date === data.date)) {
+                            this.items = this.items.filter(item => item.date !== data.date);
+                        } else {
+                            if (this.items.length >= 4) {
+                                alert('Maksimal hanya dapat memilih 4 slot dalam 1 transaksi.');
+                                return;
+                            }
+                            this.items.push(data);
+                        }
+                        localStorage.setItem('cart', JSON.stringify(this.items));
+                    },
+
+                    getCartCount() {
+                        return this.items.length;
+                    },
+
+                    isInCart(date) {
+                        return this.items.some(item => item.date === date);
+                    }
+                });
+            });
+    </script>
 </body>
 
 </html>
