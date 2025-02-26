@@ -94,19 +94,19 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('username', 'password');
-
         if (Auth::attempt($credentials)) {
-            return redirect()->route('home');
+            $request->session()->regenerate();
+            
+            return redirect()->intended();
         }
 
         return back()->withErrors([
             'err' => 'Username atau Password salah.',
-        ]);
+        ])->onlyInput('username');
     }
 }
