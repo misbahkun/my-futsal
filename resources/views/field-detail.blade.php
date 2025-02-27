@@ -130,7 +130,8 @@
                                 venue: '{{ $field->venue->name }}',
                                 field: '{{ $field->name }}',
                                 date: `${nextDate} ${timeSlot}`,
-                                price: prices[nextDate + ' ' + timeSlot] || {{ $minPrice }}
+                                price: prices[nextDate + ' ' + timeSlot] || {{ $minPrice }},
+                                status: status[nextDate + ' ' + timeSlot]
                             })"
                                 class="border border-black rounded-lg p-4 flex flex-col"
                                 :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB] cursor-default' :

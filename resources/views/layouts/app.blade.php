@@ -29,6 +29,10 @@
                 items: JSON.parse(localStorage.getItem('cart')) || [],
 
                 addToCart(data) {
+                    if (data.status === 'booked') {
+                        alert('Slot sudah terisi.');
+                        return;
+                    }
                     if (this.items.some(item => item.date === data.date && item.field === data.field)) {
                         this.items = this.items.filter(item => item.date !== data.date || item.field !==
                             data.field);
