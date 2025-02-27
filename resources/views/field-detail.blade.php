@@ -118,7 +118,8 @@
                     <template x-for="nextDate in getNextDates(date, 6)">
                         <div class="border border-black rounded-lg bg-[#FFF6F6] py-6 px-7 sm:px-9.9 flex flex-col">
                             <p class="font-bold text-lg text-center" x-text="formatDate(nextDate, 'schedule')"></p>
-                            <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')"></p>
+                            <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')">
+                            </p>
                         </div>
                     </template>
                 </div>
@@ -133,13 +134,16 @@
                             })"
                                 class="border border-black rounded-lg p-4 flex flex-col"
                                 :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB] cursor-default' :
-                                    $store.cart.isInCart(`${nextDate} ${timeSlot}`) ? 'bg-green-500 cursor-pointer text-white' : 'bg-[#FFF6F6] cursor-pointer'">
-                                <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')"></p>
+                                    $store.cart.isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ?
+                                    'bg-green-500 cursor-pointer text-white' : 'bg-[#FFF6F6] cursor-pointer'">
+                                <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')">
+                                </p>
                                 <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
                                 <p class="text-lg font-semibold text-center"
                                     x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
                                 <p class="text-sm font-semibold text-center"
-                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : $store.cart.isInCart(`${nextDate} ${timeSlot}`) ? 'text-white' : 'text-my-red'"
+                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : $store.cart
+                                        .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' : 'text-my-red'"
                                     x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
                                 </p>
                             </div>
