@@ -6,7 +6,7 @@
 
 @section('header')
     @include('components.navbar')
-    <img class="fixed top-16 z-50 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
+    <img class="fixed top-16 z-10 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')
@@ -144,7 +144,8 @@
                                     x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
                                 <p class="text-sm font-semibold text-center"
                                     :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : $store.cart
-                                        .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' : 'text-my-red'"
+                                        .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' :
+                                        'text-my-red'"
                                     x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
                                 </p>
                             </div>
@@ -259,8 +260,69 @@
                 </div>
             </div>
         </div>
+        <div class="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-end items-center sidebar">
+            <div class="bg-white rounded-2xl h-full p-5 w-4/5 md:w-2/3 lg:w-1/2  overflow-y-auto">
+                <div class="flex justify-between" id="closeSidebar">
+                    <h1 class="font-bold text-2xl mb-5">Cart</h1>
+                    <img src="{{ asset('storage/close.png') }}" class="w-8 h-8 cursor-pointer" alt="">
+                </div>
+
+                <form id="bookForm">
+                    <template x-for="item in $store.cart.items">
+                        <div class="mb-4 border border-gray-500 rounded-lg p-4">
+                            <h2 class="font-semibold" x-text="item.venue"></h2>
+                            <p x-text="item.field"></p>
+                            <p x-text="item.date"></p>
+                            <p x-text="$store.cart.formatPrice(item.price)"></p>
+                        </div>
+                    </template>
+                    <button id="checkout" type="submit"
+                        class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer mt-3">
+                        Checkout
+                    </button>
+                </form>
+            </div>
+        </div>
     @endsection
 
     @section('footer')
         @include('components.footer', ['maxWidth' => 'max-w-6xl'])
     @endsection
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const cart = document.getElementsByClassName('cart');
+
+                for (let i = 0; i < cart.length; i++) {
+                    cart[i].addEventListener('click', function() {
+                        document.querySelector('.sidebar').classList.remove('hidden');
+                        document.querySelector('.sidebar').classList.add('flex');
+                    });
+                }
+
+                window.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('sidebar')) {
+                        document.querySelector('.sidebar').classList.remove('flex');
+                        document.querySelector('.sidebar').classList.add('hidden');
+                    }
+                });
+
+                document.getElementById('closeSidebar').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.remove('flex');
+                    document.querySelector('.sidebar').classList.add('hidden');
+                })
+
+                document.getElementById('bookForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const data = JSON.parse(localStorage.getItem('cart'));
+                    if (data.length === 0) {
+                        alert('Cart is empty.');
+                        return;
+                    }
+
+                    console.log('ty dh booking')
+                });
+            });
+        </script>
+    @endpush

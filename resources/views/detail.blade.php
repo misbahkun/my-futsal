@@ -4,7 +4,7 @@
 
 @section('header')
     @include('components.navbar')
-    <img class="fixed top-16 z-50 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
+    <img class="fixed top-16 z-10 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')

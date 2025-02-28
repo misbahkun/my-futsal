@@ -23,6 +23,7 @@
     <footer>
         @yield('footer')
     </footer>
+    @stack('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('cart', {
@@ -52,7 +53,13 @@
 
                 isInCart(date, field) {
                     return this.items.some(item => item.date === date && item.field === field);
-                }
+                },
+                formatPrice(price) {
+                    return 'Rp ' + price.toLocaleString('id-ID', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                },
             });
         });
     </script>
