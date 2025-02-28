@@ -1,12 +1,6 @@
 <nav class="bg-white fixed top-0 z-50 w-full">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div class="flex h-16 items-center justify-between" x-data="{
-            cart: JSON.parse(localStorage.getItem('cart')) || [],
-        
-            getCartCount() {
-                return this.cart.length
-            },
-        }">
+        <div class="flex h-16 items-center justify-between">
             <div class="flex items-center">
                 <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="My Futsal Logo">
                 <span class="font-bold"><a href="{{ route('home') }}">My Futsal</a></span>
