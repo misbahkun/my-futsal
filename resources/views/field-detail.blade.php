@@ -262,9 +262,9 @@
         </div>
         <div class="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-end items-center sidebar">
             <div class="bg-white rounded-2xl h-full p-5 w-4/5 md:w-2/3 lg:w-1/2  overflow-y-auto">
-                <div class="flex justify-between" id="closeSidebar">
+                <div class="flex justify-between">
                     <h1 class="font-bold text-2xl mb-5">Cart</h1>
-                    <img src="{{ asset('storage/close.png') }}" class="w-8 h-8 cursor-pointer" alt="">
+                    <img src="{{ asset('storage/close.png') }}" id="closeSidebar" class="w-8 h-8 cursor-pointer" alt="">
                 </div>
 
                 <form id="bookForm">
