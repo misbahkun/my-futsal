@@ -278,7 +278,7 @@
                     </template>
                     <button id="checkout" type="submit"
                         class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer mt-3">
-                        Checkout
+                        Lanjutkan Pembayaran
                     </button>
                 </form>
             </div>
