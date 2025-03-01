@@ -2,11 +2,11 @@
 
 @section('header')
     @include('components.navbar')
-    <img src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
+    <img class="fixed top-16 z-50 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 mt-28">
         <h1 class="font-bold mt-12 mb-8 text-2xl justify-center flex">BOOKING <span class="text-[#E72929] px-2">VENUE</span>
             OLAHRAGA TERBAIK</h1>
         <h2 class="font-bold mt-12 mb-8 text-xl">BARU <span class="text-[#E72929]">DITAMBAHKAN</span></h2>
@@ -20,7 +20,7 @@
                         ->toArray();
                     $minPrice = !empty($prices) ? min($prices) : 0;
                 @endphp
-                <div class="flex flex-col">
+                <div class="flex flex-col items-center">
                     <a href="/v/{{ $venue->slug }}">
                         <img src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}">
                         <div class="ms-2 mt-5">

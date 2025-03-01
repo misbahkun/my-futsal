@@ -6,14 +6,13 @@
 
 @section('header')
     @include('components.navbar')
-    <img src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
+    <img class="fixed top-16 z-10 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')
-    <div class="mx-5 sm:mx-auto sm:max-w-6xl" x-data="{ active: 'Schedule' }">
+    <div class="mx-5 mt-24 sm:mx-auto sm:max-w-6xl sm:mt-28" x-data="{ active: 'Schedule' }">
         <div class="relative">
-            <img src="{{ asset('storage/' . $field->venue->large_image) }}" class="mt-6"
-                alt="{{ $field->venue->large_image }}">
+            <img src="{{ asset('storage/' . $field->venue->large_image) }}" alt="{{ $field->venue->large_image }}">
             <img src="{{ asset('storage/' . $field->venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
                 alt="{{ $field->venue->logo_image }}">
         </div>
@@ -76,7 +75,7 @@
                 '12:00 - 14:00',
                 '10:00 - 12:00',
                 '08:00 - 10:00',
-            ]
+            ],
         }">
             <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-32 2xl:gap-52">
                 <div>
@@ -106,7 +105,7 @@
                             "
                             class="absolute inset-0 opacity-0 cursor-pointer">
                             @foreach ($fields as $f)
-                                <option value="{{ $f->id }}" {{ $f->id == $field->id ? 'selected' : '' }}>
+                                <option value="{{ $f->id }}" {{ $f->id === $field->id ? 'selected' : '' }}>
                                     {{ $f->name }}
                                 </option>
                             @endforeach
@@ -119,22 +118,34 @@
                     <template x-for="nextDate in getNextDates(date, 6)">
                         <div class="border border-black rounded-lg bg-[#FFF6F6] py-6 px-7 sm:px-9.9 flex flex-col">
                             <p class="font-bold text-lg text-center" x-text="formatDate(nextDate, 'schedule')"></p>
-                            <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')"></p>
+                            <p class="text-sm text-my-red font-semibold text-center" x-text="formatDate(nextDate, 'day')">
+                            </p>
                         </div>
                     </template>
                 </div>
                 <div class="grid grid-cols-6 gap-4 mt-8 min-w-max">
                     <template x-for="timeSlot in timeSlots">
                         <template x-for="nextDate in getNextDates(date, 6)">
-                            <div class="border border-black rounded-lg p-4 flex flex-col"
-                                :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB]' : 'bg-[#FFF6F6]'">
+                            <div @click="$store.cart.addToCart({
+                                venue: '{{ $field->venue->name }}',
+                                field: '{{ $field->name }}',
+                                date: `${nextDate} ${timeSlot}`,
+                                price: prices[nextDate + ' ' + timeSlot] || {{ $minPrice }},
+                                status: status[nextDate + ' ' + timeSlot]
+                            })"
+                                class="border border-black rounded-lg p-4 flex flex-col"
+                                :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'bg-[#D1BBBB] cursor-default' :
+                                    $store.cart.isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ?
+                                    'bg-green-500 cursor-pointer text-white' : 'bg-[#FFF6F6] cursor-pointer'">
                                 <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')">
                                 </p>
                                 <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
                                 <p class="text-lg font-semibold text-center"
                                     x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
                                 <p class="text-sm font-semibold text-center"
-                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : 'text-my-red'"
+                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : $store.cart
+                                        .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' :
+                                        'text-my-red'"
                                     x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
                                 </p>
                             </div>
