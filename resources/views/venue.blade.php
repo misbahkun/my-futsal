@@ -20,7 +20,7 @@
                         ->toArray();
                     $minPrice = !empty($prices) ? min($prices) : 0;
                 @endphp
-                <div class="flex flex-col">
+                <div class="flex flex-col items-center">
                     <a href="/v/{{ $venue->slug }}">
                         <img src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}">
                         <div class="ms-2 mt-5">

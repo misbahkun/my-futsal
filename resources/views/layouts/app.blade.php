@@ -63,7 +63,7 @@
             });
  
             Alpine.store('menu', {
-                open: true,
+                open: false,
                 auth: false,
                 
                 handleOpen() {

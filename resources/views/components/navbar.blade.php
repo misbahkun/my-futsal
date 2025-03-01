@@ -1,7 +1,6 @@
 <nav class="bg-white fixed top-0 z-50 w-full">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <!-- x-data ini untuk agar bisa akses ke state global cart -->
-        <div class="flex h-16 items-center justify-between" x-data>
+        <div class="flex h-16 items-center justify-between" x-data="{ menu: $store.menu }">
             <div class="flex items-center">
                 <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="My Futsal Logo">
                 <span class="font-bold"><a href="{{ route('home') }}">My Futsal</a></span>
@@ -25,7 +24,26 @@
                             x-text="$store.cart.getCartCount()"></span>
                     </div>
                     @if (Auth::check())
-                        <a href="#"><span class="fw-bold">{{ Auth::user()->full_name }}</span></a>
+                        <div class="relative flex gap-1" @click="menu.handleAuthClick()">
+                            <p class="fw-semibold cursor-pointer">{{ Auth::user()->full_name }}</p>
+                            <img :src="menu.auth ? '{{ asset('storage/up-arrows.png') }}' :
+                                '{{ asset('storage/down-arrows.png') }}'"
+                                class="w-5 h-5 cursor-pointer" alt="chevron">
+                            <div x-show="menu.auth === true"
+                                class="space-y-3 flex flex-col absolute top-10 bg-white p-5 rounded-lg shadow-xl">
+                                <a class="font-semibold cursor-pointer" href="/dashboard">Dashboard</a>
+                                <div class="flex gap-1 cursor-pointer">
+                                    <form action="" method="POST">
+                                        @csrf
+                                        <button type="submit" class="flex gap-2">
+                                            <span>Logout</span>
+                                            <img src="{{ asset('storage/logout.png') }}" class="w-5 h-5"
+                                                alt="logout">
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <button class="shadow-grey ms-2 rounded-xl py-2 px-3"><a
                                 href="{{ route('register') }}">REGISTER</a></button>
@@ -51,7 +69,8 @@
                     <div x-show="menu.auth === true" class="space-y-3 flex flex-col">
                         <a class="font-semibold cursor-pointer" href="/dashboard">Dashboard</a>
                         <div class="flex gap-1">
-                            <form action="" method="POST">
+                            <form action="" method="POST" class="cursor-pointer">
+                                @csrf
                                 <button type="submit" class="flex gap-2">
                                     <span>Logout</span>
                                     <img src="{{ asset('storage/logout.png') }}" class="w-5 h-5" alt="logout">
@@ -69,3 +88,65 @@
         </div>
     </div>
 </nav>
+
+<div class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden justify-end items-center sidebar" x-data="{ cart: $store.cart }">
+    <div class="bg-white rounded-2xl h-full p-5 w-4/5 md:w-2/3 lg:w-1/2  overflow-y-auto">
+        <div class="flex justify-between">
+            <h1 class="font-bold text-2xl mb-5">Cart</h1>
+            <img src="{{ asset('storage/close.png') }}" id="closeSidebar" class="w-8 h-8 cursor-pointer" alt="">
+        </div>
+
+        <form id="bookForm">
+            <template x-for="item in cart.items">
+                <div class="mb-4 border border-gray-500 rounded-lg p-4">
+                    <h2 x-text="item.field" class="font-semibold text-xl"></h2>
+                    <p x-text="item.venue"></p>
+                    <p x-text="item.date"></p>
+                    <p x-text="cart.formatPrice(item.price)"></p>
+                </div>
+            </template>
+            <button id="checkout" type="submit"
+                class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer mt-3">
+                Lanjutkan Pembayaran
+            </button>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cart = document.getElementsByClassName('cart');
+
+        for (let i = 0; i < cart.length; i++) {
+            cart[i].addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('hidden');
+                document.querySelector('.sidebar').classList.add('flex');
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('sidebar')) {
+                document.querySelector('.sidebar').classList.remove('flex');
+                document.querySelector('.sidebar').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('flex');
+            document.querySelector('.sidebar').classList.add('hidden');
+        })
+
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = JSON.parse(localStorage.getItem('cart'));
+            if (data.length === 0) {
+                alert('Cart is empty.');
+                return;
+            }
+
+            console.log('ty dh booking')
+        });
+    });
+</script>
+@endpush
