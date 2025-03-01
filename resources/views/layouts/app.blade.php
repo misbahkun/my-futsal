@@ -61,7 +61,7 @@
                     });
                 },
             });
-
+ 
             Alpine.store('menu', {
                 open: true,
                 auth: false,
