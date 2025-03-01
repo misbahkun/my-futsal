@@ -270,8 +270,8 @@
                 <form id="bookForm">
                     <template x-for="item in $store.cart.items">
                         <div class="mb-4 border border-gray-500 rounded-lg p-4">
-                            <h2 class="font-semibold" x-text="item.venue"></h2>
-                            <p x-text="item.field"></p>
+                            <h2 x-text="item.field" class="font-semibold text-xl"></h2>
+                            <p x-text="item.venue"></p>
                             <p x-text="item.date"></p>
                             <p x-text="$store.cart.formatPrice(item.price)"></p>
                         </div>

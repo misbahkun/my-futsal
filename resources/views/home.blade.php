@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('header')
-    <div class="mt-16" x-data="{ open: false }">
+    <div class="mt-16">
         @include('components.navbar')
         <div class="bg-[#252525]">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-10">

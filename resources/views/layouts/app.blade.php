@@ -61,8 +61,19 @@
                     });
                 },
             });
+
+            Alpine.store('menu', {
+                open: true,
+                auth: false,
+                
+                handleOpen() {
+                    this.open = !this.open
+                },
+                handleAuthClick() {
+                    this.auth = !this.auth
+                }
+            });
         });
     </script>
 </body>
-
 </html>
