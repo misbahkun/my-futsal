@@ -10,7 +10,7 @@
 @endsection
 
 @section('content')
-    <div class="mx-5 mt-24 sm:mx-auto sm:max-w-6xl sm:mt-28" x-data="{ active: 'Schedule' }">
+    <div class="mx-5 mt-24 sm:mx-auto sm:max-w-6xl sm:mt-28 " x-data="{ active: 'Schedule' }">
         <div class="relative">
             <img src="{{ asset('storage/' . $field->venue->large_image) }}" alt="{{ $field->venue->large_image }}">
             <img src="{{ asset('storage/' . $field->venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
@@ -127,10 +127,12 @@
                     <template x-for="timeSlot in timeSlots">
                         <template x-for="nextDate in getNextDates(date, 6)">
                             <div @click="$store.cart.addToCart({
+                                field_id: Number('{{ $field->id }}'),
                                 venue: '{{ $field->venue->name }}',
                                 field: '{{ $field->name }}',
                                 date: `${nextDate} ${timeSlot}`,
                                 price: prices[nextDate + ' ' + timeSlot] || {{ $minPrice }},
+                                payment_method: 'online',
                                 status: status[nextDate + ' ' + timeSlot]
                             })"
                                 class="border border-black rounded-lg p-4 flex flex-col"

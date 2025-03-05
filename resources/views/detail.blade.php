@@ -55,7 +55,7 @@
                             <img src="{{ asset('storage/' . $field->image) }}" class="lg:w-[500px] lg:h-[415px]"
                                 alt="{{ $field->name }}">
                             <h3 class="font-bold mb-1 text-lg">{{ $field->name }}</h3>
-                            <p class="font-semibold text-grey-56">
+                            <p class="font-semibold">
                                 Rp {{ number_format($minPrice, 0, ',', '.') }} ~ Rp
                                 {{ number_format($maxPrice, 0, ',', '.') }}
                             </p>
