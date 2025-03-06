@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('status', ['paid', 'unpaid'])->default('unpaid');
             $table->integer('amount');
             $table->enum('payment_method', ['online', 'on_site']);
+            $table->string('payment_proof')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

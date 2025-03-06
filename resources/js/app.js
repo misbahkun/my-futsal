@@ -50,14 +50,6 @@ Alpine.store('cart', {
     },
 });
 
-Alpine.store('darkMode', {
-   dark: JSON.parse(localStorage.getItem('darkMode')),
-   
-   getDarkMode() {
-    return this.dark
-   }
-});
-
 Alpine.store('menu', {
     open: false,
     auth: false,

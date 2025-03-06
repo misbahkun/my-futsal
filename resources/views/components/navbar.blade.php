@@ -89,7 +89,7 @@
     </div>
 </nav>
 
-<div class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden justify-end items-center sidebar" x-data="{ cart: $store.cart }">
+<div class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden justify-end items-center sidebar" x-data="{ cart: $store.cart, open: false }">
     <div class="bg-white rounded-2xl h-full p-5 w-4/5 md:w-2/3 lg:w-1/2  overflow-y-auto">
         <div class="flex justify-between">
             <h1 class="font-bold text-2xl mb-5">Cart</h1>
@@ -145,17 +145,21 @@
             })
 
             document.getElementById('bookForm').addEventListener('submit', function(e) {
+                const cart = JSON.parse(localStorage.getItem('cart'))
 
-                // const cart = JSON.parse(localStorage.getItem('cart'))
-                // if (cart.length === 0) {
-                //     alert('cart masih kosong')
-                //     return
-                // }
+                if (cart.length == 0)  {
+                    e.preventDefault()
+                    alert('cart masih kosong')
+                    return
+                }
+
                 @if (!Auth::check())
                     e.preventDefault();
                     alert('Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
                     window.location.href = "{{ route('login') }}";
                 @endif
+
+                localStorage.setItem('cart', JSON.stringify([]));
             });
         });
     </script>

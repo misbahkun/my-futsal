@@ -35,5 +35,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/book', [BookingController::class, 'book'])->name('book');
-    Route::post('/confirm-payment/{transactionId}', [BookingController::class, 'confirmPayment'])->name('confirmPayment');
+    Route::get('/payment/{transactionId}', [BookingController::class, 'showPaymentConfirmation'])->name('paymentDetail');
+    Route::post('/upload-payment/{transactionId}', [BookingController::class, 'uploadPayment'])->name('uploadPayment');
 });
+
+Route::get('/payment', [BookingController::class, 'index'])->name('payment');
