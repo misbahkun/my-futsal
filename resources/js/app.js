@@ -15,10 +15,6 @@ Alpine.store('cart', {
         if (this.items.some(item => item.date === data.date && item.field === data.field)) {
             this.items = this.items.filter(item => item.date !== data.date || item.field !== data.field);
         } else {
-            if (this.items.length >= 4) {
-                alert('Maksimal hanya dapat memilih 4 slot dalam 1 transaksi.');
-                return;
-            }
             this.items.push(data);
         }
         localStorage.setItem('cart', JSON.stringify(this.items));

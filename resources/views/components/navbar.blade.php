@@ -97,7 +97,7 @@
                 alt="close button">
         </div>
 
-        <form id="bookForm" action="{{ route('book') }}" method="POST">
+        <form id="checkoutPayment" action="{{ route('checkoutPayment') }}" method="POST">
             @csrf
             <template x-for="(item, index) in cart.items" :key="index">
                 <div class="mb-4 border border-gray-500 rounded-lg p-4">
@@ -144,7 +144,7 @@
                 document.querySelector('.sidebar').classList.add('hidden');
             })
 
-            document.getElementById('bookForm').addEventListener('submit', function(e) {
+            document.getElementById('checkoutPayment').addEventListener('submit', function(e) {
                 const cart = JSON.parse(localStorage.getItem('cart'))
 
                 if (cart.length == 0)  {
@@ -152,14 +152,6 @@
                     alert('cart masih kosong')
                     return
                 }
-
-                @if (!Auth::check())
-                    e.preventDefault();
-                    alert('Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
-                    window.location.href = "{{ route('login') }}";
-                @endif
-
-                localStorage.setItem('cart', JSON.stringify([]));
             });
         });
     </script>

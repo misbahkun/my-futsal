@@ -39,4 +39,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/upload-payment/{transactionId}', [BookingController::class, 'uploadPayment'])->name('uploadPayment');
 });
 
-Route::get('/payment', [BookingController::class, 'index'])->name('payment');
+Route::post('/checkout/payment', [BookingController::class, 'index'])->name('checkoutPayment');

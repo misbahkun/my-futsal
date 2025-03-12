@@ -8,6 +8,7 @@ use App\Models\Sports;
 use App\Models\Venue;
 use App\Models\Field;
 use App\Models\Gallery;
+use App\Models\MyAccount;
 use App\Models\Schedule;
 use App\Models\VenueSports;
 use Carbon\Carbon;
@@ -29,6 +30,22 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Admin User',
             'phone_number' => '081234567890',
             'email_verified_at' => now(),
+        ]);
+
+        MyAccount::create([
+            'name' => 'BCA',
+            'account_name' => 'Misbahudin',
+            'account_number' => '1234567890',
+            'type' => 'Bank Account',
+            'image' => 'bca-bank-central-asia.svg'
+        ]);
+        
+        MyAccount::create([
+            'name' => 'Mandiri',
+            'account_name' => 'Misbahudin',
+            'account_number' => '1234567890',
+            'type' => 'Bank Account',
+            'image' => 'bank-mandiri.svg'
         ]);
 
         // Seed sports
@@ -317,7 +334,6 @@ class DatabaseSeeder extends Seeder
                         'status' => in_array($timeSlot, $selectedTimeSlots) ? 'booked' : 'available',
                         'price' => $price,
                         'field_id' => $field->id,
-                        'user_id' => rand(0, 1) ? 1 : null,
                     ]);
                     if (in_array($timeSlot, $selectedTimeSlots)) {
                         $bookedSlots[] = $timeSlot;

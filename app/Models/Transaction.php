@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $fillable = [
-        'user_id', 'schedule_id', 'amount', 'status', 'payment_method'
+        'user_id',
+        'status',
+        'amount',
+        'payment_method',
+        'payment_proof'
     ];
 
     public function user()
@@ -17,6 +21,6 @@ class Transaction extends Model
 
     public function schedule()
     {
-        return $this->belongsTo(Schedule::class);
+        return $this->hasMany(Schedule::class);
     }
 }

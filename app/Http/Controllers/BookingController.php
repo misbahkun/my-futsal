@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MyAccount;
 use App\Models\Schedule;
 use App\Models\Transaction;
 use Exception;
@@ -11,8 +12,30 @@ use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
-  public function index() {
-    return view('payment');
+  public function index()
+  {
+    try {
+      // $items = json_decode(request()->input('items'), true);
+      // $totalPrice = 0;
+
+      // Log::info(['items' => $items]);
+
+      // foreach ($items as $item) {
+      //   $totalPrice += $item['price'];
+
+      //   // get only date
+      //   $date = explode(' ', $item['date'])[0] . join([' 00:00:00']);
+      //   // get only time slot
+      //   $time_slot = explode(' ', $item['date'], 3)[1] . ' ' . explode(' ', $item['date'], 3)[2];
+      // }
+
+      $banks = MyAccount::select('name', 'account_name','type', 'image')->get();
+
+      return view('payment', compact('banks'));
+    } catch (Exception $e) {
+      Log::error("error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+      return back()->with('error', 'Terjadi kesalahan saat melakukan checkout: ' . $e->getMessage());
+    }
   }
 
   public function book(Request $request)
@@ -66,14 +89,14 @@ class BookingController extends Controller
   }
 
   public function showPaymentConfirmation($transactionId)
-{
+  {
     // Verify the transaction belongs to the current user
     $transaction = Transaction::where('id', $transactionId)
-        ->where('user_id', Auth::id())
-        ->firstOrFail();
+      ->where('user_id', Auth::id())
+      ->firstOrFail();
 
     return view('payment', compact('transaction'));
-}
+  }
 
   public function uploadPayment(Request $request, $transactionId)
   {
