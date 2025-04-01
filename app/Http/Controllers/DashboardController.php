@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        // User metrics calculation - keep your original code
         $totalUser = User::count();
         $formattedTotalNumber = number_format($totalUser, 0, ',', '.');
 
@@ -31,13 +32,41 @@ class DashboardController extends Controller
         }
 
         $formattedPercentage = number_format(abs($percentageChange), 2);
-
         $direction = $percentageChange >= 0 ? 'up' : 'down';
+
+        // Transaction metrics - add this new code
+        $totalTransactions = Transaction::count();
+
+        $transactionsThisMonth = Transaction::whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
+
+        $transactionsLastMonth = Transaction::whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
+
+        if ($transactionsLastMonth > 0) {
+            $transactionPercentageChange = (($transactionsThisMonth - $transactionsLastMonth) / $transactionsLastMonth) * 100;
+        } else {
+            $transactionPercentageChange = $transactionsThisMonth > 0 ? 100 : 0;
+        }
+
+        $transactionPercentage = number_format(abs($transactionPercentageChange), 2);
+        $transactionDirection = $transactionPercentageChange >= 0 ? 'up' : 'down';
+
+        // Recent transactions with pagination - updated to use paginate(10)
+        $recentTransactions = Transaction::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('dashboard.home', compact(
             'formattedTotalNumber',
             'formattedPercentage',
-            'direction'
+            'direction',
+            'totalTransactions',
+            'transactionPercentage',
+            'transactionDirection',
+            'recentTransactions'
         ));
     }
 

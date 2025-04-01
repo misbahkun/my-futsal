@@ -49,108 +49,151 @@
                         </svg>
                     </button>
 
-                    <!-- Modal -->
-                    <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
-                        <div @click="open = false" class="fixed inset-0 bg-black opacity-50"></div>
+                    <!-- Create User Modal -->
+                    <div x-show="open" class="fixed inset-0 flex items-center justify-center z-[999999]">
+                        <div @click="open = false" class="fixed inset-0 bg-black opacity-50 z-[999998]"></div>
+                        <!-- Make background slightly lower z-index -->
                         <div
-                            class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
-                            <div class="flex justify-between px-5 py-4 sm:px-6 sm:py-5">
-                                <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                                    Add New User
-                                </h3>
-                                <img @click="open = false"
-                                    :src="darkMode ? '{{ asset('storage/close-white.png') }}' :
-                                        '{{ asset('storage/close.png') }}'"
-                                    class="w-8 h-8 cursor-pointer" alt="close button">
+                            class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto z-[1000000]">
+                            <div
+                                class="flex justify-between px-5 py-3 sm:px-6 sm:py-4 sticky top-0 bg-white dark:bg-gray-800 z-10 border-b border-gray-100 dark:border-gray-700">
+                                <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Add New User</h3>
+                                <button @click="open = false" class="text-gray-400 hover:text-gray-500">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
-                            <form action="" method="POST">
+                            <form action="{{ route('admin.users.store') }}" method="POST">
                                 @csrf
-                                <div class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-                                    {{-- Elements --}}
-                                    <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            Full Name
-                                        </label>
-                                        <input type="text" placeholder="Masukan Nama Lengkap"
-                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
-                                    </div>
-                                    {{-- Elements --}}
-                                    <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            Username
-                                        </label>
-                                        <input type="text" placeholder="Masukan Username"
-                                            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
-                                    </div>
-                                    <!-- Elements -->
-                                    <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            Email
-                                        </label>
-                                        <div class="relative">
-                                            <span
-                                                class="absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                        d="M3.04175 7.06206V14.375C3.04175 14.6511 3.26561 14.875 3.54175 14.875H16.4584C16.7346 14.875 16.9584 14.6511 16.9584 14.375V7.06245L11.1443 11.1168C10.457 11.5961 9.54373 11.5961 8.85638 11.1168L3.04175 7.06206ZM16.9584 5.19262C16.9584 5.19341 16.9584 5.1942 16.9584 5.19498V5.20026C16.9572 5.22216 16.946 5.24239 16.9279 5.25501L10.2864 9.88638C10.1145 10.0062 9.8862 10.0062 9.71437 9.88638L3.07255 5.25485C3.05342 5.24151 3.04202 5.21967 3.04202 5.19636C3.042 5.15695 3.07394 5.125 3.11335 5.125H16.8871C16.9253 5.125 16.9564 5.15494 16.9584 5.19262ZM18.4584 5.21428V14.375C18.4584 15.4796 17.563 16.375 16.4584 16.375H3.54175C2.43718 16.375 1.54175 15.4796 1.54175 14.375V5.19498C1.54175 5.1852 1.54194 5.17546 1.54231 5.16577C1.55858 4.31209 2.25571 3.625 3.11335 3.625H16.8871C17.7549 3.625 18.4584 4.32843 18.4585 5.19622C18.4585 5.20225 18.4585 5.20826 18.4584 5.21428Z"
-                                                        fill="#667085" />
-                                                </svg>
-                                            </span>
-                                            <input type="text" placeholder="myfutsal@gmail.com"
-                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-[62px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Elements -->
-                                    <div x-data="{
-                                        selectedCountry: 'ID',
-                                        countryCodes: {
-                                            'ID': '+62',
-                                        },
-                                        phoneNumber: '62'
-                                    }">
-                                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            Phone
-                                        </label>
-                                        <div class="relative">
-                                            <div class="absolute">
-                                                <select x-model="selectedCountry"
-                                                    @change="phoneNumber = countryCodes[selectedCountry]"
-                                                    class="focus:border-brand-300 focus:ring-brand-500/10 appearance-none rounded-l-lg border-0 border-r border-gray-200 bg-transparent bg-none py-3 pr-8 pl-3.5 leading-tight text-gray-700 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:text-gray-400">
-                                                    <option value="ID"
-                                                        class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-                                                        ID
-                                                    </option>
-                                                    <!-- Add more country codes as needed -->
-                                                </select>
-                                                <div
-                                                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-700 dark:text-gray-400">
-                                                    <svg class="stroke-current" width="20" height="20"
-                                                        viewBox="0 0 20 20" fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396"
-                                                            stroke="" stroke-width="1.5" stroke-linecap="round"
-                                                            stroke-linejoin="round" />
-                                                    </svg>
-                                                </div>
+                                <div class="p-5 sm:p-6">
+                                    <div class="flex">
+                                        <!-- Left Column -->
+                                        <div class="w-full md:w1/2 px-3 mb-4">
+                                            <!-- Full Name -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Full
+                                                    Name <span class="text-error-500">*</span></label>
+                                                <input type="text" name="full_name" value="{{ old('full_name') }}"
+                                                    required placeholder="Enter Full Name"
+                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                                @error('full_name')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
                                             </div>
-                                            <input placeholder="62" x-model="phoneNumber" type="tel"
-                                                class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-[84px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+
+                                            <!-- Email -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Email
+                                                    <span class="text-error-500">*</span></label>
+                                                <input type="email" name="email" value="{{ old('email') }}" required
+                                                    placeholder="user@example.com"
+                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                                @error('email')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Password -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Password
+                                                    <span class="text-error-500">*</span></label>
+                                                <input type="password" name="password" required placeholder="Enter Password"
+                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                                @error('password')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Role -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Role</label>
+                                                <select name="role"
+                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                                                    <option value="non_member" selected>Non Member</option>
+                                                    <option value="member">Member</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                                @error('role')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column -->
+                                        <div class="w-full md:w1/2 px-3 mb-4">
+                                            <!-- Username -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Username
+                                                    <span class="text-error-500">*</span></label>
+                                                <input type="text" name="username" value="{{ old('username') }}" required
+                                                    placeholder="Enter Username"
+                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                                @error('username')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Phone -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Phone
+                                                    <span class="text-error-500">*</span></label>
+                                                <div class="flex">
+                                                    <span
+                                                        class="inline-flex items-center px-3 h-10 mt-2 text-sm border border-r-0 border-gray-300 bg-gray-50 text-gray-500 rounded-l-lg dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">+62</span>
+                                                    <input name="phone_number" value="{{ old('phone_number', '') }}"
+                                                        type="tel" required placeholder="8123456789"
+                                                        class="h-10 mt-2 mb-2 w-full rounded-r-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                                </div>
+                                                @error('phone_number')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Address -->
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Address</label>
+                                                <textarea name="address" rows="3" placeholder="Enter Address"
+                                                    class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">{{ old('address') }}</textarea>
+                                                @error('address')
+                                                    <span class="text-sm text-error-500">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Verification Status -->
+                                            <div class="flex items-center mt-3">
+                                                <input type="checkbox" id="verified" name="verified" value="1"
+                                                    class="h-4 w-4 text-brand-500 focus:ring-brand-500/10 border-gray-300 rounded">
+                                                <label for="verified"
+                                                    class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-400">Mark
+                                                    email as verified</label>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mt-5 flex justify-end">
-                                        <button
-                                            class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center rounded-lg px-4 py-3 text-sm font-medium text-white transition">
-                                            Create
-                                        </button>
-                                    </div>
 
+                                    <div class="flex justify-end border-t border-gray-100 dark:border-gray-700 pt-4 mt-6">
+                                        <button type="button" @click="open = false"
+                                            class="mr-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-lg dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600">Cancel</button>
+                                        <button type="submit"
+                                            class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg">Create
+                                            User</button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
                     </div>
-                    <!-- End Modal -->
+                    <!-- End Create User Modal -->
+
+
+
                 </div>
                 <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <!-- ====== Table Six Start -->
@@ -186,13 +229,6 @@
                                             <div class="flex items-center">
                                                 <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
                                                     Email Verified At
-                                                </p>
-                                            </div>
-                                        </th>
-                                        <th class="px-5 py-3 sm:px-6">
-                                            <div class="flex items-center">
-                                                <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                    Updated At
                                                 </p>
                                             </div>
                                         </th>
@@ -249,24 +285,60 @@
                                                     </p>
                                                 </div>
                                             </td>
-                                            <td class="px-5 py-4 sm:px-6">
-                                                <div class="flex items-center">
-                                                    <p
-                                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-700 dark:bg-warning-500/15 dark:text-warning-500">
-                                                        {{ $user->updated_at }}
-                                                    </p>
-                                                </div>
-                                            </td>
+                                            <!-- Update the action buttons in the table -->
+                                            <!-- Update the action buttons in the table -->
                                             <td class="px-5 py-4 sm:px-6">
                                                 <div class="flex items-center gap-2">
-                                                    <span
-                                                        class="cursor-pointer inline-flex items-center justify-center gap-1 rounded-full bg-warning-500 px-2.5 py-0.5 text-sm font-medium text-white">
-                                                        Edit
-                                                    </span>
-                                                    <span
-                                                        class="cursor-pointer inline-flex items-center justify-center gap-1 rounded-full bg-error-500 px-2.5 py-0.5 text-sm font-medium text-white">
-                                                        Delete
-                                                    </span>
+                                                    <!-- View Button -->
+                                                    <a href="javascript:void(0)"
+                                                        onclick="Alpine.store('userManagement').viewUser('{{ $user->id }}')"
+                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-info-500 p-2 text-white hover:bg-info-600 active:bg-info-700 focus:ring-2 focus:ring-info-300 transition-colors"
+                                                        title="View Details">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4 fill-current" viewBox="0 0 24 24"
+                                                            stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <!-- Edit Button -->
+                                                    <a href="javascript:void(0)"
+                                                        onclick="Alpine.store('userManagement').editUser('{{ $user->id }}')"
+                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-warning-500 p-2 text-white hover:bg-warning-600 transition-colors"
+                                                        title="Edit User">
+                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4 fill-current" viewBox="0 0 24 24"
+                                                            stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </a>
+
+                                                    <!-- Delete Button with SweetAlert confirmation -->
+                                                    <button
+                                                        onclick="Alpine.store('userManagement').confirmDelete('{{ $user->id }}', '{{ $user->full_name }}')"
+                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-error-500 p-2 text-white hover:bg-error-600 transition-colors"
+                                                        title="Delete User">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <!-- Hidden delete form that will be submitted via JavaScript -->
+                                                    <form id="delete-form-{{ $user->id }}"
+                                                        action="{{ route('admin.users.destroy', $user->id) }}"
+                                                        method="POST" style="display: none;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>
@@ -278,6 +350,12 @@
                     <!-- ====== Table Six End -->
                 </div>
             </div>
+        </div>
+        <div x-data="{ viewModal: false, viewUser: {} }" x-cloak>
+            @include('dashboard.users.view-modal')
+        </div>
+        <div x-data="{ editModal: false, editUserId: null }" x-cloak>
+            @include('dashboard.users.edit-modal')
         </div>
     </div>
 

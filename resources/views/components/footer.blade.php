@@ -1,4 +1,4 @@
-<div class="mx-5 sm:mx-auto {{ $maxWidth ?? "max-w-max-w-6.5xl" }} mb-10">
+<div class="mx-5 sm:mx-auto {{ $maxWidth ?? 'max-w-max-w-6.5xl' }} mb-10">
     <div class="grid grid-cols-1 sm:grid-cols-4 my-14 ms-5 sm:ms-0 gap-x-10 sm:gap-x-0 lg:gap-x-60">
         <div class="col-span-1 mt-5 w-max">
             <h1 class="font-bold text-lg">COMPANY</h1>
@@ -45,9 +45,11 @@
                 <a href="#"><img src="{{ asset('storage/social.png') }}" alt="instagram"></a>
                 <a href="#"><img src="{{ asset('storage/linkedin.png') }}" alt="linkedin"></a>
                 <a href="#"><img src="{{ asset('storage/play.png') }}" alt="play"></a>
-                <a href="#"><img src="{{ asset('storage/facebook.png') }}" alt="facebook"></a>
+                <a href="https://www.facebook.com/hjmuriyahsukses"><img
+                        src="{{ asset('storage/facebook-no-color.png') }}" alt="facebook"></a>
             </div>
-            <p class="text-black-46 font-semibold mt-3">support@myfutsal<span class="ps-5"><a href="#">+62 812 8655 8895</a></span></p>
+            <p class="text-black-46 font-semibold mt-3">support@myfutsal<span class="ps-5"><a href="#">+62 812
+                        8655 8895</a></span></p>
         </div>
     </div>
 </div>

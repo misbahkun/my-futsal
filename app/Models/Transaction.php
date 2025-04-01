@@ -14,13 +14,13 @@ class Transaction extends Model
         'payment_proof'
     ];
 
-    public function user()
-    {
-        return $this->hasMany(User::class);
-    }
-
     public function schedule()
     {
-        return $this->hasMany(Schedule::class);
+        return $this->hasOne(Schedule::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

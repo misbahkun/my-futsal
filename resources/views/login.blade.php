@@ -17,16 +17,16 @@
                 <form action="{{ route('postLogin') }}" method="POST" class="flex flex-col gap-y-5">
                     @csrf
                     <div class="flex flex-col gap-y-2">
-                        <input placeholder="Username" type="text" name="username" id="username" class="border font-semibold border-black rounded-md p-3" required>
+                        <input placeholder="Username or Email" type="text" name="login" id="login"
+                            class="border font-semibold border-black rounded-md p-3" required>
                     </div>
-                    @if ($errors->has('err'))
-                            <span class="text-red-500">{{ $errors->first('err') }}</span>
-                        @endif
                     <div class="flex flex-col gap-y-2">
-                        <input placeholder="Password" type="password" name="password" id="password" class="border font-semibold border-black rounded-md p-3" required>
+                        <input placeholder="Password" type="password" name="password" id="password"
+                            class="border font-semibold border-black rounded-md p-3" required>
                     </div>
                     <button type="submit" class="bg-my-red text-white font-bold py-3 rounded-md">LOGIN</button>
-                    <p>Kamu belum punya akun ? <a href="{{ route('register') }}" class="text-my-red underline font-semibold">Register disini</a></p>
+                    <p>Kamu belum punya akun ? <a href="{{ route('register') }}"
+                            class="text-my-red underline font-semibold">Register disini</a></p>
             </div>
         </div>
     </div>

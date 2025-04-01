@@ -22,7 +22,7 @@
                 @endphp
                 <div class="flex flex-col items-center">
                     <a href="/v/{{ $venue->slug }}">
-                        <img src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}">
+                        <img src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}" class="w-[384px] h-[292px] object-cover rounded-2xl">
                         <div class="ms-2 mt-5">
                             <h3 class="font-bold mb-1 text-lg">{{ $venue->name }}</h3>
                             <p class="font-semibold mb-1">{{ $venue->city }}</p>

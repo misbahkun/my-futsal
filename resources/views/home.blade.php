@@ -60,22 +60,14 @@
         <h2 class="font-bold mt-12 mb-8 text-xl">REKOMENDASI <span class="text-[#E72929]">VENUE</span></h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-10 2xl:gap-7">
             @foreach ($venues as $venue)
-                @php
-                    $prices = $venue->fields
-                        ->flatMap(function ($field) {
-                            return $field->schedules->pluck('price');
-                        })
-                        ->toArray();
-                    $minPrice = !empty($prices) ? min($prices) : 0;
-                @endphp
                 <div class="flex flex-col">
                     <a href="/v/{{ $venue->slug }}">
-                        <img class="w-full" src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}">
+                        <img class="w-[384px] h-[292px] object-cover rounded-2xl" src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}">
                         <div class="ms-2 mt-5">
                             <h3 class="font-bold mb-1 text-lg">{{ $venue->name }}</h3>
                             <p class="font-semibold mb-1">{{ $venue->city }}</p>
                             <p class="font-semibold">Harga Mulai <span class="text-green-400">Rp
-                                    {{ number_format($minPrice, 0, ',', '.') }}</span></p>
+                                    80.000</span></p>
                         </div>
                     </a>
                 </div>

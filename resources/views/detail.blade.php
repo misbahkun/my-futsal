@@ -10,9 +10,7 @@
 @section('content')
     <div class="mx-5 mt-24 sm:mx-auto max-w-6xl sm:mt-28" x-data="{ active: 'Lapangan' }">
         <div class="relative">
-            <img src="{{ asset('storage/' . $venue->large_image) }}" alt="{{ $venue->large_image }}">
-            <img src="{{ asset('storage/' . $venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
-                alt="{{ $venue->logo_image }}">
+            <img src="{{ asset('storage/' . $venue->large_image) }}" alt="{{ $venue->large_image }}" class="rounded-2xl">
         </div>
         <h1 class="font-bold text-2xl mt-5">{{ $venue->name }}</h1>
         <ul class="flex gap-x-2 mt-1">
@@ -30,7 +28,8 @@
         {{-- Komponen share --}}
         @include('components.share')
 
-        <ul class="overflow-x-auto flex justify-center items-center my-16 gap-x-5 sm:gap-x-40 font-bold border-t border-b w-full">
+        <ul
+            class="overflow-x-auto flex justify-center items-center my-16 gap-x-5 sm:gap-x-40 font-bold border-t border-b w-full">
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'Lapangan' }" @click="active = 'Lapangan'"
                 class="cursor-pointer">Lapangan</li>
             <li :class="{ 'bg-my-red text-white p-3 rounded-lg': active === 'About' }" @click="active = 'About'"
@@ -45,23 +44,19 @@
             <h2 class="font-bold text-2xl my-5">Field</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 sm:gap-y-5 gap-10 2xl:grid-cols-3 2xl:gap-x-14 2xl:gap-y-6">
                 @foreach ($venue->fields as $index => $field)
-                    @php
-                        $prices = $field->schedules->pluck('price')->toArray();
-                        $minPrice = !empty($prices) ? min($prices) : 0;
-                        $maxPrice = !empty($prices) ? max($prices) : 0;
-                    @endphp
                     <div class="flex flex-col {{ $index % 2 == 1 ? 'ms-auto' : 'me-auto' }} mb-5 lg:mb-14">
                         <div class="flex flex-col items-center gap-y-4">
-                            <img src="{{ asset('storage/' . $field->image) }}" class="lg:w-[500px] lg:h-[415px]"
+                            <img src="{{ asset('storage/' . $field->image) }}" class="w-[500px] h-[415px] rounded-2xl"
                                 alt="{{ $field->name }}">
                             <h3 class="font-bold mb-1 text-lg">{{ $field->name }}</h3>
                             <p class="font-semibold">
-                                Rp {{ number_format($minPrice, 0, ',', '.') }} ~ Rp
-                                {{ number_format($maxPrice, 0, ',', '.') }}
+                                Rp 80.000 ~ Rp
+                                150.000
                             </p>
                             <a href="{{ route('field.detail', ['id' => $field->id]) }}">
                                 <button
-                                    class="bg-my-red shadow-xl font-bold ms-2 w-[18.75rem] rounded-xl text-white py-3 px-5">Lihat Jadwal</button>
+                                    class="bg-my-red shadow-xl font-bold ms-2 w-[18.75rem] rounded-xl text-white py-3 px-5">Lihat
+                                    Jadwal</button>
                             </a>
                         </div>
                     </div>
@@ -126,40 +121,27 @@
                     <p class="text-my-red font-bold text-lg">Fasilitas</p>
                     <div class="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-6 gap-10 2xl:gap-7 mt-5">
                         <div class="flex flex-col items-center">
-                            <img src="{{ asset('storage/shower.png') }}" alt="">
-                            <span>Shower</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <img src="{{ asset('storage/wifi.png') }}" alt="">
-                            <span>Wifi</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <img src="{{ asset('storage/mosque.png') }}" alt="">
-                            <span>Mushola</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <img src="{{ asset('storage/locker.png') }}" alt="">
-                            <span>Locker</span>
-                        </div>
-                        <div class="flex flex-col items-center">
                             <img src="{{ asset('storage/parking.png') }}" alt="">
                             <span>Parkir</span>
                         </div>
                         <div class="flex flex-col items-center">
-                            <img src="{{ asset('storage/kantin.png') }}" alt="">
-                            <span>Kantin</span>
+                            <img src="{{ asset('storage/toilet.png') }}" alt="">
+                            <span>Toilet</span>
                         </div>
                     </div>
                 </div>
                 <div class="bg-my-grey rounded-xl py-6 px-10">
                     <p class="text-my-red font-bold text-lg">Informasi</p>
-                    <div class="flex items-center mt-5 gap-5">
-                        <img src="{{ asset('storage/instagram.png') }}" class="ms-1" alt="">
-                        <p>Instagram</p>
+                    <div class="flex items-center mt-5 gap-4">
+                        <a href="https://www.facebook.com/hjmuriyahsukses"><img src="{{ asset('storage/facebook.png') }}"
+                                class="ms-1 w-9 h-9" alt=""></a>
+                        <a href="https://www.facebook.com/hjmuriyahsukses">Facebook</a>
                     </div>
                     <div class="flex items-center mt-5 gap-4">
-                        <img src="{{ asset('storage/location.png') }}" alt="">
-                        <p>Asatu Area, Jl. RP. Soeroso No.1, Cikini, Menteng, Central Jakarta City, Jakarta 10330</p>
+                        <a href="https://maps.app.goo.gl/PHv9uSt5c9BoA8sn6?g_st=aw"><img
+                                src="{{ asset('storage/location.png') }}" alt=""></a>
+                        <a href="https://maps.app.goo.gl/PHv9uSt5c9BoA8sn6?g_st=aw">Jl. Jenderal Ahmad Yani No.1, Procot,
+                            Kec. Slawi, Kabupaten Tegal, Jawa Tengah 52412</a>
                     </div>
                 </div>
             </div>
@@ -226,10 +208,9 @@
         <div x-show="active === 'Gallery'">
             <div class="grid grid-cols-1 sm:grid-cols-3 sm:gap-y-5 2xl:grid-cols-4 gap-10 2xl:gap-7">
                 @foreach ($venue->galleries as $gallery)
-                    <div class="flex flex-col flex-1">
-                        <img class="h-full object-cover rounded-lg" src="{{ asset('storage/' . $gallery->image) }}"
-                            alt="{{ $venue->name }}">
-                        <p class="font-semibold mt-1">{{ $venue->name }}</p>
+                    <div class="flex flex-col flex-1 items-center">
+                        <img class="h-[300px] w-[342px] object-cover rounded-lg"
+                            src="{{ asset('storage/' . $gallery->image) }}" alt="{{ $venue->name }}">
                     </div>
                 @endforeach
             </div>
