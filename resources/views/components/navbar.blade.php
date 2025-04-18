@@ -108,7 +108,19 @@
                     </div>
                     <p x-text="item.venue"></p>
                     <p x-text="item.date"></p>
-                    <p x-text="cart.formatPrice(item.price)"></p>
+
+                    <!-- Display original and discounted prices -->
+                    <template x-if="item.originalPrice">
+                        <div>
+                            <p class="line-through text-gray-600" x-text="cart.formatPrice(item.originalPrice)">
+                            </p>
+                            <p class="text-green-600 font-bold" x-text="cart.formatPrice(item.price)"></p>
+                        </div>
+                    </template>
+                    <template x-if="!item.originalPrice">
+                        <p class="text-green-600 font-bold" x-text="cart.formatPrice(item.price)"></p>
+                    </template>
+
                     <input type="hidden" name="items[]" :value="JSON.stringify(item)">
                 </div>
             </template>
@@ -147,10 +159,22 @@
             document.getElementById('checkoutPayment').addEventListener('submit', function(e) {
                 const cart = JSON.parse(localStorage.getItem('cart'))
 
-                if (cart.length == 0)  {
+                if (cart.length == 0) {
                     e.preventDefault()
-                    alert('cart masih kosong')
-                    return
+                    Swal.fire({
+                        title: "Keranjang masih kosong",
+                        text: "Silahkan pilih slot booking terlebih dahulu!",
+                        icon: "warning",
+                        showCancelButton: false,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "OK"
+                    }).then((result) => {
+                        console.log(result)
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route('venue') }}'
+                        }
+                    });
                 }
             });
         });

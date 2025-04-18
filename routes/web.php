@@ -7,6 +7,7 @@ use App\Http\Controllers\FieldController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\VenueController;
@@ -30,7 +31,9 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+    Route::get('/profile', [ProfileController::class, 'showProfile'])->name('profile');
+    Route::get('/change-password', [ProfileController::class, 'showChangePasswordForm'])->name('password.form');
+    Route::put('/change-password', [ProfileController::class, 'updatePassword'])->name('password.update');
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('homeDashboard');
@@ -39,7 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{id}', [UsersController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('admin.users.destroy');
         Route::get('/users/{id}', [UsersController::class, 'show'])->name('admin.users.show');
-        Route::get('/users/{id}/edit', [UsersController::class, 'getEditData'])->name('admin.users.getEditData');
+        Route::get('/users/{id}/edit', [UsersController::class, 'getEditData'])->name('admin.users.edit');
 
 
         Route::get('/transactions', [TransactionController::class, 'index'])->name('admin.transactions');

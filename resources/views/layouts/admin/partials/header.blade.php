@@ -103,7 +103,7 @@
                     @click.prevent="dropdownOpen = ! dropdownOpen">
                     {{-- photo profile --}}
                     <span class="mr-3 h-11 w-11 overflow-hidden rounded-full">
-                        <img src="{{ asset('src/images/user/owner.jpg') }}" alt="User" />
+                        <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="User" />
                     </span>
 
                     <span class="text-theme-sm mr-1 block font-medium"> {{ Auth::user()->full_name }}
@@ -141,6 +141,19 @@
                                         fill="" />
                                 </svg>
                                 Edit profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('password.form') }}"
+                                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                                <svg class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10H19C20.6569 10 22 11.3431 22 13V19C22 20.6569 20.6569 22 19 22H5C3.34315 22 2 20.6569 2 19V13C2 11.3431 3.34315 10 5 10H6ZM16.5 10V8C16.5 5.51472 14.4853 3.5 12 3.5C9.51472 3.5 7.5 5.51472 7.5 8V10H16.5ZM5 11.5H19C19.8284 11.5 20.5 12.1716 20.5 13V19C20.5 19.8284 19.8284 20.5 19 20.5H5C4.17157 20.5 3.5 19.8284 3.5 19V13C3.5 12.1716 4.17157 11.5 5 11.5ZM12 15C11.4477 15 11 15.4477 11 16C11 16.5523 11.4477 17 12 17C12.5523 17 13 16.5523 13 16C13 15.4477 12.5523 15 12 15ZM9.5 16C9.5 14.6193 10.6193 13.5 12 13.5C13.3807 13.5 14.5 14.6193 14.5 16C14.5 17.3807 13.3807 18.5 12 18.5C10.6193 18.5 9.5 17.3807 9.5 16Z"
+                                        fill="" />
+                                </svg>
+                                Change password
                             </a>
                         </li>
                     </ul>

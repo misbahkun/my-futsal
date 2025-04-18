@@ -99,10 +99,7 @@
                                 </span>
                             </a>
                         </li>
-                    @endif
 
-                    <!-- Menu Item Users (visible only to admin) -->
-                    @if (Auth::user()->role === 'admin')
                         <li>
                             <a href="{{ route('admin.users') }}" @click="selected = (selected === 'Users' ? '':'Users')"
                                 class="menu-item group"

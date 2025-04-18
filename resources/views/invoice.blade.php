@@ -60,6 +60,10 @@
                         <p class="text-gray-600">{{ $transaction->user->full_name }}</p>
                         <p class="text-gray-600">{{ $transaction->user->email }}</p>
                         <p class="text-gray-600">{{ $transaction->user->phone_number }}</p>
+                        <p
+                            class="inline-block px-4 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm mt-1">
+                            {{ $transaction->user->role }}
+                        </p>
                     </div>
 
                     <!-- Merchant Info -->
@@ -103,15 +107,11 @@
                             @endforeach
                         </tbody>
                         <tfoot>
-                            <tr>
+                            {{-- <tr>
                                 <td colspan="3" class="py-4 px-4 text-right font-semibold">Subtotal</td>
                                 <td class="py-4 px-4 text-right">Rp{{ number_format($transaction->amount, 0, ',', '.') }}
                                 </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="py-4 px-4 text-right font-semibold">Diskon</td>
-                                <td class="py-4 px-4 text-right">Rp0</td>
-                            </tr>
+                            </tr> --}}
                             <tr class="bg-gray-50">
                                 <td colspan="3" class="py-4 px-4 text-right font-bold">Total</td>
                                 <td class="py-4 px-4 text-right font-bold">

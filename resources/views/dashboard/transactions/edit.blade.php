@@ -168,10 +168,10 @@
                                     class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
 
                                 @if ($transaction->payment_proof)
-                                    <div class="mt-2 flex items-center">
-                                        <span class="text-sm text-gray-500 mr-2">Current proof:</span>
-                                        <a href="{{ Storage::url($transaction->payment_proof) }}" target="_blank"
-                                            class="text-sm text-primary hover:underline">View proof</a>
+                                    <div class="mt-5 flex flex-col w-fit">
+                                        <span class="text-lg font-bold mb-3 text-gray-500 mr-2 dark:text-white">Foto Bukti
+                                            Pembayaran:</span>
+                                        <img src="{{ Storage::url($transaction->payment_proof) }}" class="object-fit-cover" alt="foto bukti pembayaran">
                                     </div>
                                 @endif
 

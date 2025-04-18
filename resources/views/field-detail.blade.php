@@ -37,11 +37,23 @@
             date: '{{ date('Y-m-d') }}',
             status: {{ json_encode($status) }},
             prices: {{ json_encode($prices) }},
+            originalPrices: {{ json_encode($originalPrices ?? []) }},
             timePrices: {{ json_encode($timePrices) }},
+            hasDiscount: {{ json_encode($hasDiscount ?? false) }},
+            discount: {{ json_encode($discount ?? 0) }},
             calculateTimePrice(timeSlot) {
                 const startTime = timeSlot.split(' - ')[0];
                 const startHour = parseInt(timeSlot.split(':')[0]);
                 return (startHour >= 8 && startHour < 16) ? this.timePrices.pagi : this.timePrices.sore;
+            },
+            calculateOriginalTimePrice(timeSlot) {
+                if (!this.hasDiscount) {
+                    return this.calculateTimePrice(timeSlot);
+                }
+                // Calculate original price before discount
+                const startHour = parseInt(timeSlot.split(':')[0]);
+                const price = (startHour >= 8 && startHour < 16) ? this.timePrices.pagi : this.timePrices.sore;
+                return Math.round(price / (1 - this.discount));
             },
             getSlotStatus(date, timeSlot) {
                 // Periksa apakah status tersedia di data dari server
@@ -115,6 +127,9 @@
                     <div class="mt-8 text-sm">
                         <p>*Periode <span class="text-my-red">Tanggal Booking</span> :</p>
                         <p>*Tap pada kolom waktu untuk memilih <span class="text-my-red">Jam Booking</span></p>
+                        <template x-if="hasDiscount">
+                            <p class="mt-2 font-semibold text-green-600">*Anda mendapatkan diskon 10% sebagai member</p>
+                        </template>
                     </div>
                 </div>
                 <div>
@@ -167,9 +182,24 @@
                                 <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')">
                                 </p>
                                 <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
-                                <p class="text-lg font-semibold text-center"
-                                    x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || calculateTimePrice(timeSlot))">
-                                </p>
+                                <template x-if="hasDiscount">
+                                    <div class="text-center">
+                                        <p class="text-lg font-semibold line-through text-gray-600"
+                                            x-text="formatPrice(originalPrices[nextDate + ' ' + timeSlot] || 
+                                                Math.round(calculateTimePrice(timeSlot) / (1 - discount)))">
+                                        </p>
+                                        <p class="text-lg font-semibold text-green-600"
+                                            :class="$store.cart.isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ?
+                                                'text-white' : 'text-green-600'"
+                                            x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || calculateTimePrice(timeSlot))">
+                                        </p>
+                                    </div>
+                                </template>
+                                <template x-if="!hasDiscount">
+                                    <p class="text-lg font-semibold text-center"
+                                        x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || calculateTimePrice(timeSlot))">
+                                    </p>
+                                </template>
                                 <p class="text-sm font-semibold text-center"
                                     :class="getSlotStatus(nextDate, timeSlot) === 'booked' ? 'text-black' : $store.cart
                                         .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' :

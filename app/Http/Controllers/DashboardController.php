@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Transaction;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // User metrics calculation - keep your original code
         $totalUser = User::count();
         $formattedTotalNumber = number_format($totalUser, 0, ',', '.');
 
@@ -34,8 +34,10 @@ class DashboardController extends Controller
         $formattedPercentage = number_format(abs($percentageChange), 2);
         $direction = $percentageChange >= 0 ? 'up' : 'down';
 
-        // Transaction metrics - add this new code
-        $totalTransactions = Transaction::count();
+        $totalTransactions = Transaction::where('user_id', '=', Auth::user()->id)->count();
+        $allTotalTransactions = Transaction::count();
+
+        Log::info(['totalTransactions' => $totalTransactions, 'allTotalTransactions' => $allTotalTransactions]);
 
         $transactionsThisMonth = Transaction::whereMonth('created_at', $now->month)
             ->whereYear('created_at', $now->year)
@@ -55,7 +57,12 @@ class DashboardController extends Controller
         $transactionDirection = $transactionPercentageChange >= 0 ? 'up' : 'down';
 
         // Recent transactions with pagination - updated to use paginate(10)
-        $recentTransactions = Transaction::with('user')
+        $historyTransactions = Transaction::with('user')
+            ->orderBy('created_at', 'desc')
+            ->where('user_id', '=', Auth::user()->id)
+            ->paginate(10);
+
+        $allHistoryTransactions = Transaction::with('user')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -63,15 +70,12 @@ class DashboardController extends Controller
             'formattedTotalNumber',
             'formattedPercentage',
             'direction',
+            'allTotalTransactions',
             'totalTransactions',
             'transactionPercentage',
             'transactionDirection',
-            'recentTransactions'
+            'allHistoryTransactions',
+            'historyTransactions'
         ));
-    }
-
-    public function profile()
-    {
-        return view('dashboard.profile');
     }
 }

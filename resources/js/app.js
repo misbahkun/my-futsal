@@ -10,27 +10,67 @@ Alpine.store('cart', {
     items: JSON.parse(localStorage.getItem('cart')) || [],
 
     addToCart(data) {
+        // Check if the slot is booked
         if (data.status === 'booked') {
-            alert('Slot sudah terisi.');
+            Swal.fire({
+                icon: 'info',
+                title: 'Slot sudah terisi',
+                text: 'Silakan pilih slot lain.',
+            })
             return;
         }
-        if (this.items.some(item => item.date === data.date && item.field === data.field)) {
-            this.items = this.items.filter(item => item.date !== data.date || item.field !== data.field);
+
+        // Check if the item is already in the cart
+        const existingItemIndex = this.items.findIndex(
+            item => item.date === data.date && item.field === data.field
+        );
+
+        if (existingItemIndex !== -1) {
+            // Remove the item if it's already in the cart
+            this.items.splice(existingItemIndex, 1);
         } else {
+            // Add the item to the cart
+            // Add original price to the data object
+            const userRole = window.user_role;
+            console.log(userRole)
+
+            if (userRole === 'member' || userRole === 'admin') {
+                data.originalPrice = this.calculateOriginalPrice(data.price);
+            }
             this.items.push(data);
         }
+
+        // Update local storage
         localStorage.setItem('cart', JSON.stringify(this.items));
     },
 
-    removeFromCart(index) {
-        const y = confirm('Ingin hapus slot ini ?')
+    calculateOriginalPrice(discountedPrice) {
+        return Math.round(discountedPrice / 0.9);
+    },
 
-        if (y) {
-            if (index !== -1) {
-                this.items.splice(index, 1);
-                localStorage.setItem('cart', JSON.stringify(this.items));
+    removeFromCart(index) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (index !== -1) {
+                    this.items.splice(index, 1);
+                    localStorage.setItem('cart', JSON.stringify(this.items));
+                }
+
+                Swal.fire({
+                    title: "Deleted!",
+                    text: "Your item has been deleted.",
+                    icon: "success"
+                });
             }
-        }
+        });
     },
 
     clearCart() {
@@ -45,6 +85,7 @@ Alpine.store('cart', {
     isInCart(date, field) {
         return this.items.some(item => item.date === date && item.field === field);
     },
+
     formatPrice(price) {
         return 'Rp ' + price.toLocaleString('id-ID', {
             minimumFractionDigits: 0,
@@ -172,7 +213,7 @@ Alpine.store('payment', {
 
         if (!this.isIndonesianEmail(this.currentEmail)) {
             Swal.fire({
-                title: 'Email Non-Indonesia',
+                title: 'Email Tidak Valid',
                 text: 'Silakan gunakan alamat email yang benar',
                 icon: 'warning',
                 confirmButtonColor: '#DC2626',
@@ -318,7 +359,6 @@ Alpine.store('payment', {
     onDigitInput(index, event) {
         // Get the digit
         const digit = event.target.value;
-        console.log(`Digit input at index ${index}: ${digit}`);
 
         // If not a digit, clear the input and return
         if (!/^[0-9]$/.test(digit)) {
@@ -474,7 +514,7 @@ Alpine.store('payment', {
                         text: 'Memproses pembayaran...',
                         icon: 'success',
                         showConfirmButton: false,
-                        timer: 2000, // Longer timer
+                        timer: 2000,
                         didClose: () => {
                             Alpine.store('cart').clearCart();
                             form.submit();
@@ -518,7 +558,6 @@ Alpine.store('payment', {
     },
 });
 
-// User Management Alpine.js Store
 Alpine.store('userManagement', {
     // Function to confirm deletion with SweetAlert2
     confirmDelete(userId, userName) {
@@ -539,44 +578,6 @@ Alpine.store('userManagement', {
         });
     },
 
-    // Function to view user details
-    viewUser(userId) {
-        console.log('Viewing user:', userId);
-
-        // Show loading state
-        Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching user details',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            willOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Get the Alpine component and set the viewModal to true
-        const viewComponent = Alpine.$data(document.querySelector('[x-data*="viewModal"]'));
-
-        // Fetch user data via AJAX
-        fetch(`/admin/users/${userId}`)
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                viewComponent.viewUser = data;
-                viewComponent.viewModal = true;
-            })
-            .catch(error => {
-                console.error('Error fetching user data:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to load user details. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#DC2626',
-                    confirmButtonText: 'OK'
-                });
-            });
-    },
-
     // Function to edit user
     editUser(userId) {
         // Show loading state
@@ -595,15 +596,28 @@ Alpine.store('userManagement', {
         editComponent.editUserId = userId;
 
         // Fetch user data via AJAX
-        fetch(`/admin/users/${userId}/edit`)
-            .then(response => response.json())
+        fetch(`/dashboard/users/${userId}/edit`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 Swal.close();
+
                 // Populate the form
                 document.getElementById('edit_full_name').value = data.full_name;
                 document.getElementById('edit_username').value = data.username;
                 document.getElementById('edit_email').value = data.email;
-                document.getElementById('edit_phone_number').value = data.phone_number.replace('+62', '');
+
+                // Format phone number to remove +62 prefix for the input field
+                let phoneNumber = data.phone_number;
+                if (phoneNumber.startsWith('+62')) {
+                    phoneNumber = phoneNumber.substring(3);
+                }
+                document.getElementById('edit_phone_number').value = phoneNumber;
+
                 document.getElementById('edit_address').value = data.address || '';
                 document.getElementById('edit_role').value = data.role;
                 document.getElementById('edit_verified').checked = data.email_verified_at !== null;
@@ -621,26 +635,9 @@ Alpine.store('userManagement', {
                     confirmButtonText: 'OK'
                 });
             });
-    },
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
     Alpine.start();
-
-    // Setup CSRF token for AJAX requests
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    // Add CSRF token to all fetch requests headers
-    const originalFetch = window.fetch;
-    window.fetch = function () {
-        let [resource, config] = arguments;
-        config = config || {};
-        config.headers = config.headers || {};
-
-        if (!(config.headers instanceof Headers)) {
-            config.headers['X-CSRF-TOKEN'] = csrfToken;
-        }
-
-        return originalFetch(resource, config);
-    };
 });

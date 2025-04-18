@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'email' => 'admin@example.com',
+            'email' => 'admin@gmail.com',
             'full_name' => 'Admin User',
             'phone_number' => '081234567890',
             'email_verified_at' => now(),
@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         MyAccount::create([
             'name' => 'MANDIRI',
             'account_name' => 'Hj. Muriyah',
-            'account_number' => '1234567890',
+            'account_number' => '91293123',
             'type' => 'Bank Account',
             'image' => 'bank-mandiri.svg'
         ]);

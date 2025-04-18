@@ -215,19 +215,43 @@
                                 <div>
                                     <p class="font-medium">{{ $item['field'] }} - {{ $item['venue'] }}</p>
                                     <p class="text-sm text-gray-500">{{ $item['date'] }}</p>
+
+                                    @if (isset($item['originalPrice']))
+                                        <div class="flex items-center space-x-2">
+                                            <p class="text-sm text-gray-500 line-through">
+                                                Rp. {{ number_format($item['originalPrice'], 0, ',', '.') }}
+                                            </p>
+                                            <p class="text-sm text-green-600">
+                                                Diskon {{ $discountPercentage }}%
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
                                 <p>Rp. {{ number_format($item['price'], 0, ',', '.') }}</p>
                             </div>
                         @endforeach
-                        <div class="flex justify-between">
-                            <p>Diskon</p>
-                            <p>Rp. 0</p>
-                        </div>
                     </div>
                     <div class="border-b border-gray-300 my-3"></div>
-                    <div class="flex justify-between font-semibold">
-                        <p>Total Bayar</p>
-                        <p>Rp. {{ number_format($totalPrice, 0, ',', '.') }}</p>
+
+                    @if ($originalTotalPrice > 0)
+                        <div class="flex justify-between text-gray-600 mb-2 font-semibold">
+                            <p>Total Harga</p>
+                            <p>Rp. {{ number_format($originalTotalPrice, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="flex justify-between text-my-red mb-2 font-semibold">
+                            <p>Diskon</p>
+                            <p>- Rp. {{ number_format($originalTotalPrice - $totalPrice, 0, ',', '.') }}</p>
+                        </div>
+                    @endif
+
+                    <div class="flex justify-between text-lg font-bold">
+                        @if ($originalTotalPrice > 0)
+                            <p class="text-green-600">Total Bayar</p>
+                            <p class="text-green-600">Rp. {{ number_format($totalPrice, 0, ',', '.') }}</p>
+                        @else
+                            <p>Total Bayar</p>
+                            <p>Rp. {{ number_format($totalPrice, 0, ',', '.') }}</p>
+                        @endif
                     </div>
                 </div>
 
@@ -465,10 +489,10 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
             if (!csrfToken) {
-                console.error('CSRF token tidak ditemukan!');
+                console.error('CSRF token tidak ditemukan! Pastikan meta tag csrf-token ada di halaman.');
                 Swal.fire({
                     title: 'Error!',
-                    text: 'CSRF token tidak ditemukan. Pastikan meta tag csrf-token ada di halaman.',
+                    text: 'CSRF token tidak ditemukan.',
                     icon: 'error',
                     confirmButtonColor: '#DC2626',
                     confirmButtonText: 'OK'
@@ -533,12 +557,28 @@
 
                     Swal.fire({
                         title: 'Error!',
-                        text: 'Terjadi kesalahan: ' + error.message,
+                        text: 'Terjadi kesalahan',
                         icon: 'error',
                         confirmButtonColor: '#DC2626',
                         confirmButtonText: 'OK'
                     });
                 });
         };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || []
+
+            if (cart.length < 1) {
+                Swal.fire({
+                    title: 'Keranjang Kosong',
+                    text: 'Silakan pilih lapangan terlebih dahulu.',
+                    icon: 'warning',
+                    confirmButtonColor: '#DC2626',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = "{{ route('venue') }}"
+                })
+            }
+        })
     </script>
 @endpush

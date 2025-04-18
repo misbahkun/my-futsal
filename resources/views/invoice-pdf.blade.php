@@ -34,7 +34,7 @@
         .invoice-header {
             background-color: #f5f5f5;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             border-bottom: 1px solid #ddd;
             overflow: hidden;
             /* Clear floats */
@@ -54,7 +54,6 @@
         .customer-merchant {
             overflow: hidden;
             /* Clear floats */
-            margin-bottom: 20px;
         }
 
         .customer {
@@ -123,6 +122,16 @@
             border-radius: 3px;
         }
 
+        .role {
+            padding: 5px 10px;
+            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1)) color: #0c6e39;
+            color: rgb(30 64 175 / var(--tw-text-opacity, 1)) font-weight: bold;
+            display: inline-block;
+            border-radius: 3px;
+            margin-bottom: 0px !important;
+            margin-top: 0px !important;
+        }
+
         /* Clear floats */
         .clearfix:after {
             content: "";
@@ -158,6 +167,7 @@
                 <p>{{ $transaction->user->full_name }}</p>
                 <p>{{ $transaction->user->email }}</p>
                 <p>{{ $transaction->user->phone_number }}</p>
+                <p class="role">{{ $transaction->user->role }}</p>
             </div>
 
             <div class="merchant">
@@ -193,14 +203,10 @@
                 @endforeach
             </tbody>
             <tfoot>
-                <tr>
+                {{-- <tr>
                     <td colspan="3" style="text-align: right;"><strong>Subtotal</strong></td>
                     <td>Rp{{ number_format($transaction->amount, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="text-align: right;"><strong>Diskon</strong></td>
-                    <td>Rp0</td>
-                </tr>
+                </tr> --}}
                 <tr class="total-row">
                     <td colspan="3" style="text-align: right;"><strong>Total</strong></td>
                     <td>Rp{{ number_format($transaction->amount, 0, ',', '.') }}</td>

@@ -30,9 +30,24 @@ class BookingController extends Controller
     // Decode JSON strings to get item data
     $decodedItems = [];
     $totalPrice = 0;
+    $discountPercentage = 0;
+    $totalOriginalPrice = 0;
+
+    // Check if user is eligible for discount
+    $hasDiscount = Auth::check() && Auth::user()->role !== 'non_member';
+    $discountPercentage = $hasDiscount ? 10 : 0;
 
     foreach ($items as $item) {
       $decodedItem = json_decode($item, true);
+      Log::info(['DECODED ITEM' => $decodedItem]);
+
+      // Calculate original and discounted prices
+      if ($hasDiscount) {
+        $originalPrice = $this->calculateOriginalPrice($decodedItem['price']);
+        $decodedItem['originalPrice'] = $originalPrice;
+        $totalOriginalPrice += $originalPrice;
+      }
+
       $decodedItems[] = $decodedItem;
       $totalPrice += $decodedItem['price'];
     }
@@ -40,8 +55,8 @@ class BookingController extends Controller
     // Store in session
     session(['cart_items' => $decodedItems]);
     session(['cart_total' => $totalPrice]);
-
-    Log::info(['items stored in session' => $decodedItems, 'total price' => $totalPrice]);
+    session(['cart_original_total' => $totalOriginalPrice]);
+    session(['discount_percentage' => $discountPercentage]);
 
     return redirect()->route('checkout');
   }
@@ -51,6 +66,8 @@ class BookingController extends Controller
     try {
       $items = session('cart_items', []);
       $totalPrice = session('cart_total', 0);
+      $originalTotalPrice = session('cart_original_total', 0);
+      $discountPercentage = session('discount_percentage', 0);
 
       if (empty($items)) {
         return redirect()->route('home')->with('error', 'Your cart is empty. Please add items to your cart.');
@@ -58,21 +75,36 @@ class BookingController extends Controller
 
       $banks = MyAccount::select('name', 'account_name', 'type', 'image')->get();
 
-      // Explicitly set these values
-      // Change this line in the index method
-      // In BookingController.php, index method
       $phoneNumber = Auth::check() && Auth::user()->phone_number && strlen(Auth::user()->phone_number) > 5
         ? Auth::user()->phone_number
         : old('phone_number', '');
       $userEmail = Auth::check() ? Auth::user()->email : old('email');
 
-      Log::info($phoneNumber);
+      // Check if user is eligible for discount
+      $hasDiscount = Auth::check() && Auth::user()->role !== 'non_member';
+      if ($hasDiscount) {
+        $discountPercentage = 10;
+      }
 
-      return view('payment', compact('banks', 'items', 'totalPrice', 'phoneNumber', 'userEmail'));
+      return view('payment', compact(
+        'banks',
+        'items',
+        'totalPrice',
+        'originalTotalPrice',
+        'discountPercentage',
+        'phoneNumber',
+        'userEmail'
+      ));
     } catch (Exception $e) {
       Log::error("error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
       return back()->with('error', 'Terjadi kesalahan saat melakukan checkout: ' . $e->getMessage());
     }
+  }
+
+  // Helper method to calculate original price
+  private function calculateOriginalPrice($discountedPrice)
+  {
+    return round($discountedPrice / 0.9);
   }
 
   /**
@@ -140,11 +172,8 @@ class BookingController extends Controller
         'payment_method' => $request->input('payment_method')
       ]);
 
-      Log::info(['Created transaction' => $transaction]);
-
       $totalPrice = 0;
 
-      // Step 2: Create/update all schedules and link them to the transaction
       foreach ($decodedItems as $key => $item) {
         // Parse date and time slot
         $dateParts = explode(' ', $item['date']);
@@ -152,7 +181,7 @@ class BookingController extends Controller
         $timeSlot = substr($item['date'], strlen($dateParts[0]) + 1);
 
         // Create/update schedule with transaction_id
-        $schedule = Schedule::updateOrCreate(
+        Schedule::updateOrCreate(
           [
             'date' => $date,
             'time_slots' => $timeSlot,
@@ -162,16 +191,13 @@ class BookingController extends Controller
             'status' => 'booked',
             'price' => $item['price'],
             'user_id' => Auth::id(),
-            'transaction_id' => $transaction->id // Link to the transaction
+            'transaction_id' => $transaction->id
           ]
         );
-
-        Log::info(['Created/updated schedule' => $schedule]);
 
         $totalPrice += $item['price'];
       }
 
-      // Step 3: Update the transaction with the total price
       $transaction->amount = $totalPrice;
       $transaction->save();
 
@@ -194,10 +220,10 @@ class BookingController extends Controller
    */
   private function findExistingTransaction($scheduleIdentifiers)
   {
-    // Look for unpaid transactions that are less than 10 minutes old
+    // Look for unpaid transactions that are less than 15 minutes old
     $transactions = Transaction::where('user_id', Auth::id())
       ->where('status', 'unpaid')
-      ->where('created_at', '>', now()->subMinutes(10))
+      ->where('created_at', '>', now()->subMinutes(15))
       ->get();
 
     if ($transactions->isEmpty()) {
@@ -277,9 +303,6 @@ class BookingController extends Controller
   public function sendVerification(Request $request)
   {
     try {
-      // Logging untuk debugging
-      Log::info('Send verification request received', $request->all());
-
       // Validasi input
       $validator = Validator::make($request->all(), [
         'method' => 'required|in:whatsapp,miscall,email',
@@ -302,13 +325,6 @@ class BookingController extends Controller
       // Simpan ke session
       session(['verification_code' => $verificationCode]);
 
-      // Log kode yang dibuat (hapus di production)
-      Log::info('Verification code generated', [
-        'code' => $verificationCode,
-        'method' => $request->method
-      ]);
-
-      // Proses berdasarkan metode verifikasi
       switch ($request->method) {
         case 'email':
           // Verifikasi email dengan mailable yang sudah ada
@@ -363,9 +379,6 @@ class BookingController extends Controller
             $responseData = json_decode($response, true);
 
             if (isset($responseData['status']) && $responseData['status'] === true) {
-              Log::info("WhatsApp verification code sent to {$to}");
-              Log::info("Fonnte API Response: " . $response);
-
               return response()->json([
                 'success' => true,
                 'message' => 'Kode verifikasi berhasil dikirim melalui WhatsApp'
@@ -383,7 +396,6 @@ class BookingController extends Controller
           break;
 
         case 'miscall':
-          // Dummy response untuk Miscall (untuk implementasi nyata, integrasi dengan penyedia layanan miscall)
           Log::info("Miscall verification would be sent to {$request->phone_number}");
           break;
       }
@@ -473,7 +485,6 @@ class BookingController extends Controller
     // Send email with the password
     try {
       Mail::to($user->email)->send(new PasswordNotification($user, $randomPassword));
-      Log::info("Password email sent to {$user->email}");
     } catch (\Exception $e) {
       Log::error("Failed to send password email: " . $e->getMessage());
     }

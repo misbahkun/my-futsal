@@ -66,6 +66,15 @@ class InvoiceController extends Controller
                 ->with(['field.venue'])
                 ->get();
 
+            $discountPercentage = 0;
+            $totalOriginalPrice = 0;
+
+            // Check if user is eligible for discount
+            $hasDiscount = Auth::check() && Auth::user()->role !== 'non_member';
+            if ($hasDiscount) {
+                $discountPercentage = 10;
+            }
+
             return view('invoice', compact('transaction', 'schedules'));
         } catch (\Exception $e) {
             Log::error("Error in showInvoice: " . $e->getMessage());
@@ -85,7 +94,7 @@ class InvoiceController extends Controller
                 ->findOrFail($transactionId);
 
             // Make sure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
+            if ($transaction->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
                 return redirect()->route('home')
                     ->with('error', 'Anda tidak memiliki akses ke invoice ini.');
             }

@@ -33,6 +33,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            window.user_role = "{{ Auth::check() ? Auth::user()->role : 'null' }}";
             // Display Laravel validation errors with SweetAlert
             @if ($errors->any())
                 let errorMessage = '<ul class="text-left">';
@@ -55,6 +56,18 @@
                 Swal.fire({
                     title: 'Berhasil!',
                     text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Display success messages
+            @if (session('success-payment'))
+                localStorage.removeItem('cart');
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: '{{ session('success-payment') }}',
                     icon: 'success',
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'

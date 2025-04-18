@@ -53,146 +53,9 @@
                     <div x-show="open" class="fixed inset-0 flex items-center justify-center z-[999999]">
                         <div @click="open = false" class="fixed inset-0 bg-black opacity-50 z-[999998]"></div>
                         <!-- Make background slightly lower z-index -->
-                        <div
-                            class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto z-[1000000]">
-                            <div
-                                class="flex justify-between px-5 py-3 sm:px-6 sm:py-4 sticky top-0 bg-white dark:bg-gray-800 z-10 border-b border-gray-100 dark:border-gray-700">
-                                <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Add New User</h3>
-                                <button @click="open = false" class="text-gray-400 hover:text-gray-500">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <form action="{{ route('admin.users.store') }}" method="POST">
-                                @csrf
-                                <div class="p-5 sm:p-6">
-                                    <div class="flex">
-                                        <!-- Left Column -->
-                                        <div class="w-full md:w1/2 px-3 mb-4">
-                                            <!-- Full Name -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Full
-                                                    Name <span class="text-error-500">*</span></label>
-                                                <input type="text" name="full_name" value="{{ old('full_name') }}"
-                                                    required placeholder="Enter Full Name"
-                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                                                @error('full_name')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Email -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Email
-                                                    <span class="text-error-500">*</span></label>
-                                                <input type="email" name="email" value="{{ old('email') }}" required
-                                                    placeholder="user@example.com"
-                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                                                @error('email')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Password -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Password
-                                                    <span class="text-error-500">*</span></label>
-                                                <input type="password" name="password" required placeholder="Enter Password"
-                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                                                @error('password')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Role -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Role</label>
-                                                <select name="role"
-                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                                    <option value="non_member" selected>Non Member</option>
-                                                    <option value="member">Member</option>
-                                                    <option value="admin">Admin</option>
-                                                </select>
-                                                @error('role')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                        <!-- Right Column -->
-                                        <div class="w-full md:w1/2 px-3 mb-4">
-                                            <!-- Username -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Username
-                                                    <span class="text-error-500">*</span></label>
-                                                <input type="text" name="username" value="{{ old('username') }}" required
-                                                    placeholder="Enter Username"
-                                                    class="h-10 mt-2 mb-2 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                                                @error('username')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Phone -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Phone
-                                                    <span class="text-error-500">*</span></label>
-                                                <div class="flex">
-                                                    <span
-                                                        class="inline-flex items-center px-3 h-10 mt-2 text-sm border border-r-0 border-gray-300 bg-gray-50 text-gray-500 rounded-l-lg dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">+62</span>
-                                                    <input name="phone_number" value="{{ old('phone_number', '') }}"
-                                                        type="tel" required placeholder="8123456789"
-                                                        class="h-10 mt-2 mb-2 w-full rounded-r-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                                                </div>
-                                                @error('phone_number')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Address -->
-                                            <div>
-                                                <label
-                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Address</label>
-                                                <textarea name="address" rows="3" placeholder="Enter Address"
-                                                    class="w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">{{ old('address') }}</textarea>
-                                                @error('address')
-                                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Verification Status -->
-                                            <div class="flex items-center mt-3">
-                                                <input type="checkbox" id="verified" name="verified" value="1"
-                                                    class="h-4 w-4 text-brand-500 focus:ring-brand-500/10 border-gray-300 rounded">
-                                                <label for="verified"
-                                                    class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-400">Mark
-                                                    email as verified</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex justify-end border-t border-gray-100 dark:border-gray-700 pt-4 mt-6">
-                                        <button type="button" @click="open = false"
-                                            class="mr-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-lg dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600">Cancel</button>
-                                        <button type="submit"
-                                            class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium rounded-lg">Create
-                                            User</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                        @include('dashboard.users.create-modal')
                     </div>
                     <!-- End Create User Modal -->
-
-
 
                 </div>
                 <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
@@ -286,56 +149,70 @@
                                                 </div>
                                             </td>
                                             <!-- Update the action buttons in the table -->
-                                            <!-- Update the action buttons in the table -->
                                             <td class="px-5 py-4 sm:px-6">
                                                 <div class="flex items-center gap-2">
-                                                    <!-- View Button -->
-                                                    <a href="javascript:void(0)"
-                                                        onclick="Alpine.store('userManagement').viewUser('{{ $user->id }}')"
-                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-info-500 p-2 text-white hover:bg-info-600 active:bg-info-700 focus:ring-2 focus:ring-info-300 transition-colors"
-                                                        title="View Details">
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4 fill-current" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    <a href="{{ route('admin.users.show', $user->id) }}"
+                                                        class="cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+                                                        title="View">
+                                                        <svg fill="#ff0000" version="1.1" id="Capa_1"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            xmlns:xlink="http://www.w3.org/1999/xlink" width="64px"
+                                                            height="64px" viewBox="0 0 442.04 442.04" xml:space="preserve"
+                                                            stroke="#ff0000">
+                                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                                stroke-linejoin="round"></g>
+                                                            <g id="SVGRepo_iconCarrier">
+                                                                <g>
+                                                                    <g>
+                                                                        <path
+                                                                            d="M221.02,341.304c-49.708,0-103.206-19.44-154.71-56.22C27.808,257.59,4.044,230.351,3.051,229.203 c-4.068-4.697-4.068-11.669,0-16.367c0.993-1.146,24.756-28.387,63.259-55.881c51.505-36.777,105.003-56.219,154.71-56.219 c49.708,0,103.207,19.441,154.71,56.219c38.502,27.494,62.266,54.734,63.259,55.881c4.068,4.697,4.068,11.669,0,16.367 c-0.993,1.146-24.756,28.387-63.259,55.881C324.227,321.863,270.729,341.304,221.02,341.304z M29.638,221.021 c9.61,9.799,27.747,27.03,51.694,44.071c32.83,23.361,83.714,51.212,139.688,51.212s106.859-27.851,139.688-51.212 c23.944-17.038,42.082-34.271,51.694-44.071c-9.609-9.799-27.747-27.03-51.694-44.071 c-32.829-23.362-83.714-51.212-139.688-51.212s-106.858,27.85-139.688,51.212C57.388,193.988,39.25,211.219,29.638,221.021z">
+                                                                        </path>
+                                                                    </g>
+                                                                    <g>
+                                                                        <path
+                                                                            d="M221.02,298.521c-42.734,0-77.5-34.767-77.5-77.5c0-42.733,34.766-77.5,77.5-77.5c18.794,0,36.924,6.814,51.048,19.188 c5.193,4.549,5.715,12.446,1.166,17.639c-4.549,5.193-12.447,5.714-17.639,1.166c-9.564-8.379-21.844-12.993-34.576-12.993 c-28.949,0-52.5,23.552-52.5,52.5s23.551,52.5,52.5,52.5c28.95,0,52.5-23.552,52.5-52.5c0-6.903,5.597-12.5,12.5-12.5 s12.5,5.597,12.5,12.5C298.521,263.754,263.754,298.521,221.02,298.521z">
+                                                                        </path>
+                                                                    </g>
+                                                                    <g>
+                                                                        <path
+                                                                            d="M221.02,246.021c-13.785,0-25-11.215-25-25s11.215-25,25-25c13.786,0,25,11.215,25,25S234.806,246.021,221.02,246.021z">
+                                                                        </path>
+                                                                    </g>
+                                                                </g>
+                                                            </g>
                                                         </svg>
                                                     </a>
-
-                                                    <!-- Edit Button -->
-                                                    <a href="javascript:void(0)"
-                                                        onclick="Alpine.store('userManagement').editUser('{{ $user->id }}')"
-                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-warning-500 p-2 text-white hover:bg-warning-600 transition-colors"
-                                                        title="Edit User">
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4 fill-current" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                    </a>
-
-                                                    <!-- Delete Button with SweetAlert confirmation -->
-                                                    <button
-                                                        onclick="Alpine.store('userManagement').confirmDelete('{{ $user->id }}', '{{ $user->full_name }}')"
-                                                        class="cursor-pointer inline-flex items-center justify-center rounded-full bg-error-500 p-2 text-white hover:bg-error-600 transition-colors"
-                                                        title="Delete User">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    <button onclick="editUser('{{ $user->id }}')"
+                                                        class="cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-full bg-warning-500 hover:bg-warning-600 text-white"
+                                                        title="Edit">
+                                                        <svg width="16" height="16" fill="currentColor"
+                                                            viewBox="0 0 16 16">
+                                                            <path
+                                                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                            <path fill-rule="evenodd"
+                                                                d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                                                         </svg>
                                                     </button>
 
-                                                    <!-- Hidden delete form that will be submitted via JavaScript -->
+                                                    <!-- Tombol Delete User -->
+                                                    <button
+                                                        onclick="confirmDelete('{{ $user->id }}', '{{ $user->full_name }}')"
+                                                        class="cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-full bg-error-500 hover:bg-error-600 text-white ml-1"
+                                                        title="Delete">
+                                                        <svg width="16" height="16" fill="currentColor"
+                                                            viewBox="0 0 16 16">
+                                                            <path
+                                                                d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                                            <path fill-rule="evenodd"
+                                                                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <!-- Form Delete User (hidden) -->
                                                     <form id="delete-form-{{ $user->id }}"
                                                         action="{{ route('admin.users.destroy', $user->id) }}"
-                                                        method="POST" style="display: none;">
+                                                        method="POST" class="hidden">
                                                         @csrf
                                                         @method('DELETE')
                                                     </form>
@@ -351,12 +228,185 @@
                 </div>
             </div>
         </div>
-        <div x-data="{ viewModal: false, viewUser: {} }" x-cloak>
-            @include('dashboard.users.view-modal')
-        </div>
-        <div x-data="{ editModal: false, editUserId: null }" x-cloak>
-            @include('dashboard.users.edit-modal')
-        </div>
+
+        
+        @include('dashboard.users.edit-modal')
+
     </div>
 
 @endsection
+
+@push('script')
+{{-- users.blade.php --}}
+    <script>
+        // Fungsi untuk edit user dengan penanganan error yang lebih baik
+        function editUser(userId) {
+
+            // Set ID user yang akan diedit
+            document.querySelector('#edit-user-form').setAttribute('action', `/dashboard/users/${userId}`);
+
+            // Fetch data user dengan AJAX dan penanganan error yang lebih baik
+            fetch(`/dashboard/users/${userId}/edit`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error(`Expected JSON response but got ${contentType || 'unknown content type'}`);
+                    }
+
+                    // Clone response untuk debugging jika diperlukan
+                    const clonedResponse = response.clone();
+
+                    // Parse response sebagai JSON dengan penanganan error
+                    return response.json().catch(err => {
+                        console.error('JSON parsing error:', err);
+                        return clonedResponse.text().then(text => {
+                            console.log('Raw response text:', text);
+                            throw new Error('Invalid JSON response from server');
+                        });
+                    });
+                })
+                .then(data => {
+                    console.log('User data received:', data);
+
+                    // Tutup loading dialog jika menggunakan SweetAlert
+                    if (window.Swal) {
+                        Swal.close();
+                    }
+
+                    // Validasi data yang diterima
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Received invalid data structure from server');
+                    }
+
+                    // Isi formulir dengan data user dengan validasi ekstra
+                    document.getElementById('edit_full_name').value = data.full_name || '';
+                    document.getElementById('edit_username').value = data.username || '';
+                    document.getElementById('edit_email').value = data.email || '';
+
+                    // Format nomor telepon
+                    let phoneNumber = data.phone_number || '';
+                    if (phoneNumber && phoneNumber.startsWith('+62')) {
+                        phoneNumber = phoneNumber.substring(3);
+                    }
+                    document.getElementById('edit_phone_number').value = phoneNumber;
+
+                    document.getElementById('edit_address').value = data.address || '';
+
+                    // Pastikan elemen ada sebelum mencoba mengakses
+                    const roleSelect = document.getElementById('edit_role');
+                    if (roleSelect) {
+                        roleSelect.value = data.role || 'non_member';
+                    } else {
+                        console.error('Role select element not found');
+                    }
+
+                    const verifiedCheckbox = document.getElementById('edit_verified');
+                    if (verifiedCheckbox) {
+                        verifiedCheckbox.checked = data.email_verified_at !== null;
+                    }
+
+                    // Tampilkan modal
+                    showEditModal();
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+
+                    // Tutup loading dialog jika menggunakan SweetAlert
+                    if (window.Swal) {
+                        Swal.close();
+
+                        // Tampilkan pesan error yang lebih spesifik
+                        Swal.fire({
+                            title: 'Error!',
+                            text: `Failed`,
+                            icon: 'error',
+                            confirmButtonColor: '#DC2626',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        alert(`Error: Failed to load user data. ${error.message}`);
+                    }
+
+                    // Cek route dengan menggunakan AJAX sederhana untuk debugging
+                    console.log('Checking route availability...');
+                    fetch('/dashboard/users')
+                        .then(response => {
+                            console.log('Users index route status:', response.status);
+                        })
+                        .catch(err => {
+                            console.error('Could not reach users index:', err);
+                        });
+                });
+        }
+
+        // Fungsi untuk menampilkan modal
+        function showEditModal() {
+            const modal = document.getElementById('edit-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.classList.add('overflow-hidden'); // Mencegah scrolling pada background
+                modal.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        // Fungsi untuk menyembunyikan modal
+        function hideEditModal() {
+            const modal = document.getElementById('edit-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.classList.remove('overflow-hidden'); // Mengaktifkan kembali scrolling
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        // Fungsi untuk konfirmasi delete
+        function confirmDelete(userId, userName) {
+            if (window.Swal) {
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: `Are you sure you want to delete the user "${userName}"? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#DC2626',
+                    cancelButtonColor: '#6B7280',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(`delete-form-${userId}`).submit();
+                    }
+                });
+            } else {
+                // Fallback jika SweetAlert tidak tersedia
+                if (confirm(`Are you sure you want to delete the user "${userName}"? This action cannot be undone.`)) {
+                    document.getElementById(`delete-form-${userId}`).submit();
+                }
+            }
+        }
+
+        // Inisialisasi event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tambahkan event listener untuk tombol tutup modal
+            const closeButtons = document.querySelectorAll('.close-modal');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', hideEditModal);
+            });
+
+            // Event listener untuk submit form
+            const submitButton = document.querySelector('#submit-edit-form');
+            if (submitButton) {
+                submitButton.addEventListener('click', function() {
+                    document.getElementById('edit-user-form').submit();
+                });
+            }
+        });
+    </script>
+@endpush

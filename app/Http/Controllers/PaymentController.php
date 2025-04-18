@@ -19,7 +19,6 @@ class PaymentController extends Controller
     public function showPaymentPending($transactionId)
     {
         try {
-            // First, let's check and cancel any expired transactions
             $this->cancelExpiredTransactions();
 
             // Find the transaction
@@ -38,13 +37,12 @@ class PaymentController extends Controller
                     return redirect()->route('home')
                         ->with('error', 'Transaksi ini telah dibatalkan karena melewati batas waktu pembayaran.');
                 } elseif ($transaction->status === 'paid') {
-                    return redirect()->route('booking.success', $transaction->id)
-                        ->with('success', 'Pembayaran Anda telah diterima.');
+                    return redirect()->route('invoice', ['transactionId' => $transaction->id])
+                        ->with('success-payment', 'Pembayaran Anda telah diterima.');
                 }
             }
 
             // Calculate remaining time for payment (15 minutes)
-            // Hanya perlu menghitung deadline jika status masih unpaid
             $createdAt = Carbon::parse($transaction->created_at);
             $deadline = $createdAt->copy()->addMinutes(15);
             $now = Carbon::now();
@@ -71,15 +69,34 @@ class PaymentController extends Controller
                 ->get();
 
             $items = [];
+            $discountPercentage = 0;
+            $totalOriginalPrice = 0;
+
+            // Check if user is eligible for discount
+            $hasDiscount = Auth::check() && Auth::user()->role !== 'non_member';
+            $discountPercentage = $hasDiscount ? 10 : 0;
 
             if ($schedules->count() > 0) {
                 foreach ($schedules as $schedule) {
-                    $items[] = [
+                    $itemPrice = $schedule->price;
+
+                    // Calculate original price if discount is applicable
+                    $originalPrice = $hasDiscount ? round($itemPrice / 0.9) : $itemPrice;
+
+                    $itemDetails = [
                         'field' => $schedule->field->name,
                         'venue' => $schedule->field->venue->name,
                         'date' => Carbon::parse($schedule->date)->format('d M Y') . ' ' . $schedule->time_slots,
-                        'price' => $schedule->price
+                        'price' => $itemPrice,
+                        'originalPrice' => $hasDiscount ? $originalPrice : null
                     ];
+
+                    $items[] = $itemDetails;
+
+                    // Accumulate original total price for discount calculation
+                    if ($hasDiscount) {
+                        $totalOriginalPrice += $originalPrice;
+                    }
                 }
             }
 
@@ -87,7 +104,10 @@ class PaymentController extends Controller
                 'transaction',
                 'bank',
                 'deadline',
-                'items'
+                'items',
+                'hasDiscount',
+                'discountPercentage',
+                'totalOriginalPrice'
             ));
         } catch (\Exception $e) {
             Log::error("Error in showPaymentPending: " . $e->getMessage());
@@ -138,7 +158,7 @@ class PaymentController extends Controller
                 // Update transaction with proof and change status to pending_verification
                 $transaction->update([
                     'payment_proof' => $path,
-                    'status' => 'pending_verification' // Pastikan status selalu pending_verification setelah upload
+                    'status' => 'pending_verification'
                 ]);
 
                 return redirect()->route('payment.pending', $transaction->id)
@@ -156,7 +176,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Check and cancel all expired transactions (unpaid after 10 minutes)
+     * Check and cancel all expired transactions (unpaid after 15 minutes)
      */
     public function cancelExpiredTransactions()
     {
@@ -190,7 +210,6 @@ class PaymentController extends Controller
         try {
             Schedule::where('transaction_id', $transaction->id)->delete();
 
-            // Now delete the transaction
             $transaction->update([
                 'status' => 'cancelled'
             ]);
@@ -209,26 +228,21 @@ class PaymentController extends Controller
     public function checkPaymentStatus($transactionId)
     {
         try {
-            // First, check and cancel any expired transactions
             $this->cancelExpiredTransactions();
 
-            // Find the transaction
             $transaction = Transaction::findOrFail($transactionId);
 
-            // Ensure the transaction belongs to the current user
             if ($transaction->user_id !== Auth::id()) {
                 return redirect()->route('home')
                     ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
             }
 
-            // Check transaction status and redirect accordingly
             if ($transaction->status === 'cancelled') {
                 return redirect()->route('home')
                     ->with('error', 'Transaksi ini telah dibatalkan.');
             } elseif ($transaction->status === 'paid') {
-                // If transaction is paid, redirect to invoice page
                 return redirect()->route('invoice', $transaction->id)
-                    ->with('success', 'Pembayaran Anda telah diterima. Berikut adalah invoice Anda.');
+                    ->with('success-payment', 'Pembayaran Anda telah diterima. Berikut adalah invoice Anda.');
             } elseif ($transaction->status === 'pending_verification') {
                 return redirect()->back()
                     ->with('info-wait-verification', 'Bukti pembayaran Anda sedang diverifikasi oleh admin. Silakan tunggu.');

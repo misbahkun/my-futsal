@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -49,17 +50,13 @@ class UsersController extends Controller
      */
     public function index()
     {
-        $users = User::select('id', 'full_name', 'role', 'email', 'phone_number', 'email_verified_at', 'updated_at')
-            ->where('role', '!=', 'admin')
+        $users = User::select('id', 'full_name', 'role', 'email', 'phone_number', 'email_verified_at')
             ->get()
             ->map(function ($user) {
                 if ($user->email_verified_at) {
-                    $emailVerifiedAt = Carbon::parse($user->email_verified_at);
-                    $user->email_verified_at = $emailVerifiedAt->setTimezone('Asia/Jakarta');
-                }
-
-                if ($user->updated_at) {
-                    $user->updated_at = $user->updated_at->setTimezone('Asia/Jakarta');
+                    $user->email_verified_at = Carbon::parse($user->email_verified_at)
+                        ->setTimezone('Asia/Jakarta')
+                        ->format('d M Y, H:i');
                 }
 
                 return $user;
@@ -80,6 +77,11 @@ class UsersController extends Controller
                 'phone_number' => 'required|string|max:255|unique:users',
                 'password' => 'required|string|min:8',
                 'address' => 'nullable|string|max:255',
+                'role' => 'sometimes|in:admin,member,non_member',
+            ], [
+                'phone_number.unique' => 'No hp sudah digunakan.',
+                'username.unique' => 'Username sudah digunakan.',
+                'email.unique' => 'Email sudah digunakan.'
             ]);
 
             if ($validator->fails()) {
@@ -88,15 +90,26 @@ class UsersController extends Controller
                     ->withInput();
             }
 
+            if ($request->has('phone_number')) {
+                $phoneNumber = $request->phone_number;
+                if (str_starts_with($phoneNumber, '62')) {
+                    $phoneNumber = '62' . ltrim($phoneNumber, '62');
+                } else if (str_starts_with($phoneNumber, '0')) {
+                    $phoneNumber = '62' . ltrim($phoneNumber, '0');
+                } else if (!str_starts_with($phoneNumber, '+')) {
+                    $phoneNumber = '62' . ltrim($phoneNumber, '0');
+                }
+            }
+
             // Create new user
             $user = new User();
             $user->full_name = $request->full_name;
             $user->username = $request->username;
             $user->email = $request->email;
-            $user->phone_number = $request->phone_number;
+            $user->phone_number = $phoneNumber;
             $user->password = Hash::make($request->password);
             $user->address = $request->address;
-            $user->role = 'non_member'; // Default role
+            $user->role = $request->input('role', 'non_member'); // Default to non_member if not provided
             $user->image = 'user.png'; // Default image
 
             // If admin verifies directly
@@ -113,118 +126,6 @@ class UsersController extends Controller
             return redirect()->back()
                 ->with('error', 'Failed to create user: ' . $e->getMessage())
                 ->withInput();
-        }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
-            return view('dashboard.users.edit', compact('user'));
-        } catch (\Exception $e) {
-            Log::error('Failed to retrieve user for editing: ' . $e->getMessage());
-            return redirect()->route('admin.users')
-                ->with('error', 'User not found');
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
-
-            $validator = Validator::make($request->all(), [
-                'full_name' => 'required|string|max:255',
-                'username' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('users')->ignore($user->id)
-                ],
-                'email' => [
-                    'required',
-                    'string',
-                    'email',
-                    'max:255',
-                    Rule::unique('users')->ignore($user->id)
-                ],
-                'phone_number' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('users')->ignore($user->id)
-                ],
-                'password' => 'nullable|string|min:8',
-                'address' => 'nullable|string|max:255',
-                'role' => 'nullable|in:admin,member,non_member',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
-            // Update user
-            $user->full_name = $request->full_name;
-            $user->username = $request->username;
-            $user->email = $request->email;
-            $user->phone_number = $request->phone_number;
-            $user->address = $request->address;
-
-            // Update role if provided and allowed
-            if ($request->filled('role')) {
-                $user->role = $request->role;
-            }
-
-            // Update password if provided
-            if ($request->filled('password')) {
-                $user->password = Hash::make($request->password);
-            }
-
-            // Update verification status if changing
-            if ($request->has('verified') && $request->verified && !$user->email_verified_at) {
-                $user->email_verified_at = now();
-            } else if ($request->has('verified') && !$request->verified && $user->email_verified_at) {
-                $user->email_verified_at = null;
-            }
-
-            $user->save();
-
-            return redirect()->route('admin.users')
-                ->with('success', 'User updated successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to update user: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Failed to update user: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
-            $userName = $user->full_name;
-
-            // Delete user
-            $user->delete();
-
-            return redirect()->route('admin.users')
-                ->with('success', "User '{$userName}' has been deleted successfully");
-        } catch (\Exception $e) {
-            Log::error('Failed to delete user: ' . $e->getMessage());
-            return redirect()->route('admin.users')
-                ->with('error', 'Failed to delete user: ' . $e->getMessage());
         }
     }
 
@@ -246,7 +147,7 @@ class UsersController extends Controller
                     'phone_number' => $user->phone_number,
                     'address' => $user->address,
                     'role' => $user->role,
-                    'email_verified_at' => $user->email_verified_at,0-
+                    'email_verified_at' => $user->email_verified_at ? Carbon::parse($user->email_verified_at)->setTimezone('Asia/Jakarta')->format('d M Y, H:i') : null,
                     'created_at' => $user->created_at ? $user->created_at->setTimezone('Asia/Jakarta')->format('d M Y, H:i') : null,
                     'updated_at' => $user->updated_at ? $user->updated_at->setTimezone('Asia/Jakarta')->format('d M Y, H:i') : null,
                 ]);
@@ -267,26 +168,169 @@ class UsersController extends Controller
     }
 
     /**
-     * Return user data for editing via AJAX
+     * Get data for editing a user.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
-    public function getEditData(string $id)
+    public function getEditData($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Check if it's an AJAX request
+        return response()->json($user);
+    }
+
+    /**
+     * Update the specified user in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            // Check if it's an AJAX request
+            $isAjax = $request->ajax() || $request->wantsJson();
+
+            $user = User::findOrFail($id);
+
+            // Validasi hanya untuk field yang dikirim
+            $rules = [];
+            $messages = [];
+
+            // Cek dan tambahkan aturan validasi untuk setiap field yang ada di request
+            if ($request->has('full_name')) {
+                $rules['full_name'] = 'string|max:255';
+            }
+
+            if ($request->has('username')) {
+                $rules['username'] = 'string|max:255|unique:users,username,' . $id;
+                $messages['username.unique'] = 'Username sudah digunakan.';
+            }
+
+            if ($request->has('email')) {
+                $rules['email'] = 'string|email|max:255|unique:users,email,' . $id;
+                $messages['email.unique'] = 'Email sudah digunakan.';
+            }
+
+            if ($request->has('phone_number')) {
+                $rules['phone_number'] = [
+                    'string',
+                    'regex:/^[0-9]+$/',
+                    'max:15'
+                ];
+                $messages['phone_number.string'] = 'Nomor telepon harus berupa angka.';
+                $messages['phone_number.regex'] = 'Nomor telepon hanya boleh berisi angka.';
+                $messages['phone_number.max'] = 'Nomor telepon maksimal 15 digit.';
+            }
+
+            if ($request->has('address')) {
+                $rules['address'] = 'nullable|string';
+            }
+
+            if ($request->has('role')) {
+                $rules['role'] = 'in:admin,member,non_member';
+            }
+
+            if (!empty($rules)) {
+                $validator = Validator::make($request->all(), $rules, $messages);
+
+                if ($validator->fails()) {
+                    // Return JSON for AJAX requests, redirect for normal requests
+                    if ($isAjax) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Validation failed',
+                            'errors' => $validator->errors()
+                        ], 422);
+                    } else {
+                        return redirect()->back()
+                            ->withErrors($validator)
+                            ->withInput();
+                    }
+                }
+            }
+
+            if ($request->has('full_name')) {
+                $user->full_name = $request->full_name;
+            }
+
+            if ($request->has('username')) {
+                $user->username = $request->username;
+            }
+
+            if ($request->has('email')) {
+                $user->email = $request->email;
+            }
+            
+            if ($request->has('new_password')) {
+                $user->password = Hash::make($request->new_password);
+            }
+
+            if ($request->has('phone_number')) {
+                $phoneNumber = $request->phone_number;
+                if (str_starts_with($phoneNumber, '62')) {
+                    $phoneNumber = '62' . ltrim($phoneNumber, '62');
+                } else if (str_starts_with($phoneNumber, '0')) {
+                    $phoneNumber = '62' . ltrim($phoneNumber, '0');
+                }
+                $user->phone_number = $phoneNumber;
+            }
+
+            if ($request->has('address')) {
+                $user->address = $request->address;
+            }
+
+            if ($request->has('role')) {
+                $user->role = $request->role;
+            }
+
+            $user->save();
+
+            // Return appropriate response based on request type
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User updated successfully'
+                ]);
+            } else {
+                return redirect()->route('admin.users')->with('success', 'User updated successfully');
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to update user: ' . $e->getMessage());
+
+            // Return appropriate error response based on request type
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update user: ' . $e->getMessage()
+                ], 500);
+            } else {
+                return redirect()->back()->with('error', 'Failed to update user: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
     {
         try {
             $user = User::findOrFail($id);
+            $userName = trim($user->full_name);
 
-            return response()->json([
-                'id' => $user->id,
-                'full_name' => $user->full_name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'phone_number' => $user->phone_number,
-                'address' => $user->address,
-                'role' => $user->role,
-                'email_verified_at' => $user->email_verified_at,
-            ]);
+            // Delete user
+            $user->delete();
+
+            return redirect()->route('admin.users')
+                ->with('success', "Deleted successfully");
         } catch (\Exception $e) {
-            Log::error('Failed to retrieve user data for editing: ' . $e->getMessage());
-            return response()->json(['error' => 'User not found'], 404);
+            Log::error('Failed to delete user: ' . $e->getMessage());
+            return redirect()->route('admin.users')
+                ->with('error', 'Failed to delete user: ' . $e->getMessage());
         }
     }
 }

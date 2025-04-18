@@ -141,18 +141,27 @@
                             <p class="font-medium text-gray-800 mb-3">Biaya Sewa</p>
 
                             @if (isset($items) && is_array($items) && count($items) > 0)
-                                <!-- If items array exists from session or transaction data -->
                                 @foreach ($items as $item)
                                     <div class="flex justify-between mb-3">
                                         <div>
                                             <p class="font-medium">{{ $item['field'] }} - {{ $item['venue'] }}</p>
                                             <p class="text-sm text-gray-500">{{ $item['date'] }}</p>
+
+                                            @if ($hasDiscount && isset($item['originalPrice']))
+                                                <div class="flex items-center space-x-2">
+                                                    <p class="text-sm text-gray-500 line-through">
+                                                        Rp{{ number_format($item['originalPrice'], 0, ',', '.') }}
+                                                    </p>
+                                                    <p class="text-sm text-green-600">
+                                                        Diskon {{ $discountPercentage }}%
+                                                    </p>
+                                                </div>
+                                            @endif
                                         </div>
                                         <p>Rp{{ number_format($item['price'], 0, ',', '.') }}</p>
                                     </div>
                                 @endforeach
                             @elseif(isset($schedule))
-                                <!-- Fallback to schedule if available -->
                                 <div class="flex justify-between mb-3">
                                     <div>
                                         <p class="font-medium">{{ $schedule->field->name }}</p>
@@ -167,16 +176,29 @@
                             @endif
                         </div>
 
-                        <!-- Diskon -->
-                        <div class="flex justify-between mt-3">
-                            <p>Diskon</p>
-                            <p>Rp0</p>
-                        </div>
+                        <!-- Tambahan untuk diskon -->
+                        @if ($hasDiscount && $totalOriginalPrice > 0)
+                            <div class="mb-4">
+                                <div class="flex justify-between text-gray-600 mb-2 font-semibold">
+                                    <p>Total Harga</p>
+                                    <p>Rp{{ number_format($totalOriginalPrice, 0, ',', '.') }}</p>
+                                </div>
+                                <div class="flex justify-between text-my-red mb-2 font-semibold">
+                                    <p>Diskon</p>
+                                    <p>- Rp{{ number_format($totalOriginalPrice - $transaction->amount, 0, ',', '.') }}</p>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Total -->
-                        <div class="flex justify-between font-semibold border-t border-gray-200 pt-4">
-                            <p>Total Biaya</p>
-                            <p>Rp{{ number_format($transaction->amount, 0, ',', '.') }}</p>
+                        <div class="flex justify-between font-bold border-t text-green-600 border-gray-200 pt-4">
+                            @if ($hasDiscount && $totalOriginalPrice > 0)
+                                <p>Total Bayar</p>
+                                <p>Rp{{ number_format($transaction->amount, 0, ',', '.') }}</p>
+                            @else
+                                <p>Total Bayar</p>
+                                <p>Rp{{ number_format($transaction->amount, 0, ',', '.') }}</p>
+                            @endif
                         </div>
                     </div>
                 </div>

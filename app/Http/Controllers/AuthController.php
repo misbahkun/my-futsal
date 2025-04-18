@@ -82,7 +82,7 @@ class AuthController extends Controller
             $user->username = $request->username;
             $user->full_name = $request->full_name;
             $user->password = Hash::make($request->password);
-            $user->phone_number = $request->phone_number;
+            $user->phone_number = '62' . ltrim($request->phone_number, '0');
             $user->verification_code = null;
             $user->markEmailAsVerified();
             $user->save();
@@ -95,9 +95,8 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validate the input, allowing either username or email
         $request->validate([
-            'login' => 'required|string', // Generic login field
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
