@@ -6,9 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@yield('title')</title>
+    <script>
+        window.__WS_TOKEN__ = "{{ csrf_token() }}";
+    </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+    @stack('head-scripts')
 </head>
 
 <body>
@@ -23,57 +28,86 @@
     <footer>
         @yield('footer')
     </footer>
+
     @stack('scripts')
+
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('cart', {
-                items: JSON.parse(localStorage.getItem('cart')) || [],
+        document.addEventListener('DOMContentLoaded', function() {
+            window.user_role = "{{ Auth::check() ? Auth::user()->role : 'null' }}";
+            // Display Laravel validation errors with SweetAlert
+            @if ($errors->any())
+                let errorMessage = '<ul class="text-left">';
+                @foreach ($errors->all() as $error)
+                    errorMessage += '<li>- {{ $error }}</li>';
+                @endforeach
+                errorMessage += '</ul>';
 
-                addToCart(data) {
-                    if (data.status === 'booked') {
-                        alert('Slot sudah terisi.');
-                        return;
-                    }
-                    if (this.items.some(item => item.date === data.date && item.field === data.field)) {
-                        this.items = this.items.filter(item => item.date !== data.date || item.field !==
-                            data.field);
-                    } else {
-                        if (this.items.length >= 4) {
-                            alert('Maksimal hanya dapat memilih 4 slot dalam 1 transaksi.');
-                            return;
-                        }
-                        this.items.push(data);
-                    }
-                    localStorage.setItem('cart', JSON.stringify(this.items));
-                },
+                Swal.fire({
+                    title: 'Form Tidak Valid',
+                    html: errorMessage,
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'OK'
+                });
+            @endif
 
-                getCartCount() {
-                    return this.items.length;
-                },
+            // Display success messages
+            @if (session('success'))
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            @endif
 
-                isInCart(date, field) {
-                    return this.items.some(item => item.date === date && item.field === field);
-                },
-                formatPrice(price) {
-                    return 'Rp ' + price.toLocaleString('id-ID', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    });
-                },
-            });
- 
-            Alpine.store('menu', {
-                open: false,
-                auth: false,
-                
-                handleOpen() {
-                    this.open = !this.open
-                },
-                handleAuthClick() {
-                    this.auth = !this.auth
-                }
-            });
+            // Display success messages
+            @if (session('success-payment'))
+                localStorage.removeItem('cart');
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: '{{ session('success-payment') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Display info messages
+            @if (session('info-wait-verification'))
+                Swal.fire({
+                    title: 'Menunggu Verifikasi!',
+                    text: '{{ session('info-wait-verification') }}',
+                    icon: 'info',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Display info messages
+            @if (session('info-cancelled'))
+                Swal.fire({
+                    title: 'Transaksi Dibatalkan!',
+                    text: '{{ session('info-cancelled') }}',
+                    icon: 'info',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Display error messages
+            @if (session('error'))
+                Swal.fire({
+                    title: 'Error!',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'OK'
+                });
+            @endif
         });
     </script>
 </body>
+
 </html>

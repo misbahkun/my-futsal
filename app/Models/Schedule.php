@@ -13,8 +13,8 @@ class Schedule extends Model
         'status',
         'price',
         'field_id',
-        'user_id',
         'time_slots',
+        'transaction_id'
     ];
 
     public function field()
@@ -25,5 +25,9 @@ class Schedule extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function transaction() {
+        return $this->belongsTo(Transaction::class);
     }
 };

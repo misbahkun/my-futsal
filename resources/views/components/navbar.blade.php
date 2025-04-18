@@ -33,7 +33,7 @@
                                 class="space-y-3 flex flex-col absolute top-10 bg-white p-5 rounded-lg shadow-xl">
                                 <a class="font-semibold cursor-pointer" href="/dashboard">Dashboard</a>
                                 <div class="flex gap-1 cursor-pointer">
-                                    <form action="" method="POST">
+                                    <form action="{{ route('logout') }}" method="POST" class="cursor-pointer">
                                         @csrf
                                         <button type="submit" class="flex gap-2">
                                             <span>Logout</span>
@@ -69,7 +69,7 @@
                     <div x-show="menu.auth === true" class="space-y-3 flex flex-col">
                         <a class="font-semibold cursor-pointer" href="/dashboard">Dashboard</a>
                         <div class="flex gap-1">
-                            <form action="" method="POST" class="cursor-pointer">
+                            <form action="{{ route('logout') }}" method="POST" class="cursor-pointer">
                                 @csrf
                                 <button type="submit" class="flex gap-2">
                                     <span>Logout</span>
@@ -89,23 +89,42 @@
     </div>
 </nav>
 
-<div class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden justify-end items-center sidebar" x-data="{ cart: $store.cart }">
+<div class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden justify-end items-center sidebar" x-data="{ cart: $store.cart, open: false }">
     <div class="bg-white rounded-2xl h-full p-5 w-4/5 md:w-2/3 lg:w-1/2  overflow-y-auto">
         <div class="flex justify-between">
             <h1 class="font-bold text-2xl mb-5">Cart</h1>
-            <img src="{{ asset('storage/close.png') }}" id="closeSidebar" class="w-8 h-8 cursor-pointer" alt="">
+            <img src="{{ asset('storage/close.png') }}" id="closeSidebar" class="w-8 h-8 cursor-pointer"
+                alt="close button">
         </div>
 
-        <form id="bookForm">
-            <template x-for="item in cart.items">
+        <form id="checkoutPayment" action="{{ route('checkoutPayment') }}" method="POST">
+            @csrf
+            <template x-for="(item, index) in cart.items" :key="index">
                 <div class="mb-4 border border-gray-500 rounded-lg p-4">
-                    <h2 x-text="item.field" class="font-semibold text-xl"></h2>
+                    <div class="flex justify-between" x-data="{ cart: $store.cart }">
+                        <h2 x-text="item.field" class="font-semibold text-xl"></h2>
+                        <img src="{{ asset('storage/close.png') }}" @click="cart.removeFromCart(index)"
+                            class="w-8 h-8 cursor-pointer" alt="close button">
+                    </div>
                     <p x-text="item.venue"></p>
                     <p x-text="item.date"></p>
-                    <p x-text="cart.formatPrice(item.price)"></p>
+
+                    <!-- Display original and discounted prices -->
+                    <template x-if="item.originalPrice">
+                        <div>
+                            <p class="line-through text-gray-600" x-text="cart.formatPrice(item.originalPrice)">
+                            </p>
+                            <p class="text-green-600 font-bold" x-text="cart.formatPrice(item.price)"></p>
+                        </div>
+                    </template>
+                    <template x-if="!item.originalPrice">
+                        <p class="text-green-600 font-bold" x-text="cart.formatPrice(item.price)"></p>
+                    </template>
+
+                    <input type="hidden" name="items[]" :value="JSON.stringify(item)">
                 </div>
             </template>
-            <button id="checkout" type="submit"
+            <button type="submit"
                 class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer mt-3">
                 Lanjutkan Pembayaran
             </button>
@@ -114,39 +133,50 @@
 </div>
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const cart = document.getElementsByClassName('cart');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = document.getElementsByClassName('cart');
 
-        for (let i = 0; i < cart.length; i++) {
-            cart[i].addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.remove('hidden');
-                document.querySelector('.sidebar').classList.add('flex');
+            for (let i = 0; i < cart.length; i++) {
+                cart[i].addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.remove('hidden');
+                    document.querySelector('.sidebar').classList.add('flex');
+                });
+            }
+
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('sidebar')) {
+                    document.querySelector('.sidebar').classList.remove('flex');
+                    document.querySelector('.sidebar').classList.add('hidden');
+                }
             });
-        }
 
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('sidebar')) {
+            document.getElementById('closeSidebar').addEventListener('click', function() {
                 document.querySelector('.sidebar').classList.remove('flex');
                 document.querySelector('.sidebar').classList.add('hidden');
-            }
+            })
+
+            document.getElementById('checkoutPayment').addEventListener('submit', function(e) {
+                const cart = JSON.parse(localStorage.getItem('cart'))
+
+                if (cart.length == 0) {
+                    e.preventDefault()
+                    Swal.fire({
+                        title: "Keranjang masih kosong",
+                        text: "Silahkan pilih slot booking terlebih dahulu!",
+                        icon: "warning",
+                        showCancelButton: false,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "OK"
+                    }).then((result) => {
+                        console.log(result)
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route('venue') }}'
+                        }
+                    });
+                }
+            });
         });
-
-        document.getElementById('closeSidebar').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.remove('flex');
-            document.querySelector('.sidebar').classList.add('hidden');
-        })
-
-        document.getElementById('bookForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const data = JSON.parse(localStorage.getItem('cart'));
-            if (data.length === 0) {
-                alert('Cart is empty.');
-                return;
-            }
-
-            console.log('ty dh booking')
-        });
-    });
-</script>
+    </script>
 @endpush

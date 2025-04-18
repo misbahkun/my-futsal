@@ -8,6 +8,7 @@ use App\Mail\VerifyEmail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -33,7 +34,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->where('email', $request->email)->first();
-        
+
         if ($user && $user->hasVerifiedEmail()) {
             return redirect()->back()->withErrors(['email' => 'Email already registered.']);
         }
@@ -54,7 +55,7 @@ class AuthController extends Controller
 
         $request->session()->put('email', $request->email);
 
-        return redirect()->route('verifyRegister')->with('status', 'Verification email sent!');
+        return redirect()->route('verifyRegister')->with('success', 'Verification email sent!');
     }
 
     public function verifyCode(Request $request)
@@ -66,27 +67,27 @@ class AuthController extends Controller
             'password' => 'required|string|max:50',
             'phone_number' => 'required|string|max:15',
         ]);
-        
+
         if (User::query()->where('username', $request->username)->first()) {
             return redirect()->back()->withErrors(['username' => 'Username already taken.']);
         }
-        
+
         $email = $request->session()->get('email');
 
         $user = User::query()->where('email', $email)
-                    ->where('verification_code', $request->verification_code)
-                    ->first();
+            ->where('verification_code', $request->verification_code)
+            ->first();
 
         if ($user) {
             $user->username = $request->username;
             $user->full_name = $request->full_name;
             $user->password = Hash::make($request->password);
-            $user->phone_number = $request->phone_number;
+            $user->phone_number = '62' . ltrim($request->phone_number, '0');
             $user->verification_code = null;
             $user->markEmailAsVerified();
             $user->save();
 
-            return redirect()->route('login')->with('status', 'Email verified successfully!');
+            return redirect()->route('login')->with('success', 'Email verified successfully!');
         } else {
             return redirect()->route('verifyRegister')->withErrors(['verification_code' => 'Invalid verification code.']);
         }
@@ -94,19 +95,65 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'username' => 'required|string',
+        $request->validate([
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
+        // Determine if the input is an email or username
+        $loginType = filter_var($request->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        // Prepare credentials array
+        $credentials = [
+            $loginType => $request->input('login'),
+            'password' => $request->input('password')
+        ];
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            return redirect()->intended();
+
+            // Check if there's a pending booking
+            if (session()->has('pending_booking')) {
+                $pendingBooking = session('pending_booking');
+
+                // Process and store the pending items in cart session
+                if (isset($pendingBooking['items'])) {
+                    $decodedItems = [];
+                    $totalPrice = 0;
+
+                    foreach ($pendingBooking['items'] as $item) {
+                        $decodedItem = json_decode($item, true);
+                        $decodedItems[] = $decodedItem;
+                        $totalPrice += $decodedItem['price'];
+                    }
+
+                    // Store in the cart session
+                    session(['cart_items' => $decodedItems]);
+                    session(['cart_total' => $totalPrice]);
+                }
+
+                session()->forget('pending_booking');
+
+                // Redirect to checkout to complete the booking
+                return redirect()->route('checkout')->with('info', 'Silakan lanjutkan pemesanan Anda.');
+            }
+
+            return redirect()->intended('dashboard')->with('success', 'Selamat Datang ');
         }
 
         return back()->withErrors([
-            'err' => 'Username atau Password salah.',
-        ])->onlyInput('username');
+            'login' => 'Username/Email atau Password salah',
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home')->with('success', 'Berhasil Logout!');
     }
 }

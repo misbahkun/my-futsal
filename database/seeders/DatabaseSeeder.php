@@ -8,9 +8,8 @@ use App\Models\Sports;
 use App\Models\Venue;
 use App\Models\Field;
 use App\Models\Gallery;
-use App\Models\Schedule;
+use App\Models\MyAccount;
 use App\Models\VenueSports;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -25,10 +24,26 @@ class DatabaseSeeder extends Seeder
             'username' => 'admin',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'email' => 'admin@example.com',
+            'email' => 'admin@gmail.com',
             'full_name' => 'Admin User',
             'phone_number' => '081234567890',
             'email_verified_at' => now(),
+        ]);
+
+        MyAccount::create([
+            'name' => 'BCA',
+            'account_name' => 'Hj. Muriyah',
+            'account_number' => '1234567890',
+            'type' => 'Bank Account',
+            'image' => 'bca-bank-central-asia.svg'
+        ]);
+        
+        MyAccount::create([
+            'name' => 'MANDIRI',
+            'account_name' => 'Hj. Muriyah',
+            'account_number' => '91293123',
+            'type' => 'Bank Account',
+            'image' => 'bank-mandiri.svg'
         ]);
 
         // Seed sports
@@ -36,321 +51,50 @@ class DatabaseSeeder extends Seeder
             'name' => 'Futsal',
         ]);
 
-        $miniSoccer = Sports::create([
-            'name' => 'Mini Soccer',
-        ]);
-
-        $badminton = Sports::create([
-            'name' => 'Badminton',
-        ]);
-
         // Seed venues
-        $inspireArenaSulut = Venue::create([
-            'name' => 'INSPIRE ARENA SULUT',
-            'slug' => Str::slug('INSPIRE ARENA SULUT'),
-            'image' => '1.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Manado',
-        ]);
-
-        $koramilArena04 = Venue::create([
-            'name' => 'KORAMIL ARENA 04',
-            'slug' => Str::slug('KORAMIL ARENA 04'),
-            'image' => '2.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Jakarta Timur',
-        ]);
-
-        $ckmSupportCenter = Venue::create([
-            'name' => 'CKM SUPPORT CENTER',
-            'slug' => Str::slug('CKM SUPPORT CENTER'),
-            'image' => '3.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Karawang',
-        ]);
-
-        $jiepSportCenter = Venue::create([
-            'name' => 'JIEP SPORT CENTER BASKET, FUTSAL & TENNIS',
-            'slug' => Str::slug('JIEP SPORT CENTER BASKET, FUTSAL & TENNIS'),
-            'image' => '4.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Jakarta Timur',
-        ]);
-
-        $soccerSereniaMansion = Venue::create([
-            'name' => 'SOCCER SERENIA MANSION',
-            'slug' => Str::slug('SOCCER SERENIA MANSION'),
-            'image' => '5.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Jakarta Selatan',
-        ]);
-
-        $jsFutsal = Venue::create([
-            'name' => 'JS FUTSAL',
-            'slug' => Str::slug('JS FUTSAL'),
-            'image' => '6.png',
-            'large_image' => 'inspire-arena-sulut.png',
-            'logo_image' => 'logo-inspire-arena-sulut.png',
-            'city' => 'Depok',
+        $hjMuriyah = Venue::create([
+            'name' => 'Futsal Hj. Muriyah',
+            'slug' => Str::slug('Futsal Hj Muriyah'),
+            'image' => 'venue.jpg',
+            'large_image' => 'field1.jpg',
+            'city' => 'Slawi',
         ]);
 
         // Seed venue_sports
         VenueSports::create([
-            'venue_id' => $inspireArenaSulut->id,
-            'sport_id' => $futsal->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $inspireArenaSulut->id,
-            'sport_id' => $miniSoccer->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $koramilArena04->id,
-            'sport_id' => $miniSoccer->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $ckmSupportCenter->id,
-            'sport_id' => $badminton->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $jiepSportCenter->id,
-            'sport_id' => $futsal->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $soccerSereniaMansion->id,
-            'sport_id' => $miniSoccer->id,
-        ]);
-
-        VenueSports::create([
-            'venue_id' => $jsFutsal->id,
+            'venue_id' => $hjMuriyah->id,
             'sport_id' => $futsal->id,
         ]);
 
         // Seed fields
-        $field1 = Field::create([
-            'name' => 'Futsal Outdoor A',
-            'image' => 'field.png',
-            'venue_id' => $inspireArenaSulut->id,
+        Field::create([
+            'name' => 'Lapangan 1',
+            'image' => 'field1.jpg',
+            'venue_id' => $hjMuriyah->id,
         ]);
 
-        $field2 = Field::create([
-            'name' => 'Futsal Outdoor B',
-            'image' => 'field.png',
-            'venue_id' => $inspireArenaSulut->id,
+        Field::create([
+            'name' => 'Lapangan 2',
+            'image' => 'field2.jpg',
+            'venue_id' => $hjMuriyah->id,
         ]);
 
-        $field3 = Field::create([
-            'name' => 'Indoor Court',
-            'image' => 'field.png',
-            'venue_id' => $inspireArenaSulut->id,
-        ]);
-
-        $field4 = Field::create([
-            'name' => 'Mini Soccer',
-            'image' => 'field.png',
-            'venue_id' => $inspireArenaSulut->id,
-        ]);
-
-        $field5 = Field::create([
-            'name' => 'Futsal Indoor A',
-            'image' => 'field.png',
-            'venue_id' => $koramilArena04->id,
-        ]);
-
-        $field6 = Field::create([
-            'name' => 'Futsal Indoor B',
-            'image' => 'field.png',
-            'venue_id' => $koramilArena04->id,
-        ]);
-
-        $field7 = Field::create([
-            'name' => 'Basketball Court',
-            'image' => 'field.png',
-            'venue_id' => $koramilArena04->id,
-        ]);
-
-        $field8 = Field::create([
-            'name' => 'Badminton Court',
-            'image' => 'field.png',
-            'venue_id' => $koramilArena04->id,
-        ]);
-
-        // Seed fields for CKM Support Center
-        $field9 = Field::create([
-            'name' => 'Tennis Court A',
-            'image' => 'field.png',
-            'venue_id' => $ckmSupportCenter->id,
-        ]);
-
-        $field10 = Field::create([
-            'name' => 'Tennis Court B',
-            'image' => 'field.png',
-            'venue_id' => $ckmSupportCenter->id,
-        ]);
-
-        $field11 = Field::create([
-            'name' => 'Badminton Court A',
-            'image' => 'field.png',
-            'venue_id' => $ckmSupportCenter->id,
-        ]);
-
-        $field12 = Field::create([
-            'name' => 'Badminton Court B',
-            'image' => 'field.png',
-            'venue_id' => $ckmSupportCenter->id,
-        ]);
-
-        // Seed fields for JIEP Sport Center
-        $field13 = Field::create([
-            'name' => 'Futsal Court A',
-            'image' => 'field.png',
-            'venue_id' => $jiepSportCenter->id,
-        ]);
-
-        $field14 = Field::create([
-            'name' => 'Futsal Court B',
-            'image' => 'field.png',
-            'venue_id' => $jiepSportCenter->id,
-        ]);
-
-        $field15 = Field::create([
-            'name' => 'Basketball Court A',
-            'image' => 'field.png',
-            'venue_id' => $jiepSportCenter->id,
-        ]);
-
-        $field16 = Field::create([
-            'name' => 'Basketball Court B',
-            'image' => 'field.png',
-            'venue_id' => $jiepSportCenter->id,
-        ]);
-
-        // Seed fields for Soccer Serenia Mansion
-        $field17 = Field::create([
-            'name' => 'Soccer Field A',
-            'image' => 'field.png',
-            'venue_id' => $soccerSereniaMansion->id,
-        ]);
-
-        $field18 = Field::create([
-            'name' => 'Soccer Field B',
-            'image' => 'field.png',
-            'venue_id' => $soccerSereniaMansion->id,
-        ]);
-
-        $field19 = Field::create([
-            'name' => 'Mini Soccer Field A',
-            'image' => 'field.png',
-            'venue_id' => $soccerSereniaMansion->id,
-        ]);
-
-        $field20 = Field::create([
-            'name' => 'Mini Soccer Field B',
-            'image' => 'field.png',
-            'venue_id' => $soccerSereniaMansion->id,
-        ]);
-
-        // Seed fields for JS Futsal
-        $field21 = Field::create([
-            'name' => 'Futsal Court A',
-            'image' => 'field.png',
-            'venue_id' => $jsFutsal->id,
-        ]);
-
-        $field22 = Field::create([
-            'name' => 'Futsal Court B',
-            'image' => 'field.png',
-            'venue_id' => $jsFutsal->id,
-        ]);
-
-        $field23 = Field::create([
-            'name' => 'Futsal Court C',
-            'image' => 'field.png',
-            'venue_id' => $jsFutsal->id,
-        ]);
-
-        $field24 = Field::create([
-            'name' => 'Futsal Court D',
-            'image' => 'field.png',
-            'venue_id' => $jsFutsal->id,
-        ]);
-
-        $fields = [$field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $field16, $field17, $field18, $field19, $field20, $field21, $field22, $field23, $field24];
-
-        $venuePrices = [
-            $inspireArenaSulut->id => 125000,
-            $koramilArena04->id => 300000,
-            $ckmSupportCenter->id => 50000,
-            $jiepSportCenter->id => 110000,
-            $soccerSereniaMansion->id => 530000,
-            $jsFutsal->id => 110000,
+        $galleryImages = [
+            'gallery_field1.jpg',
+            'gallery_field2.jpg',
+            'gallery2_field1.jpg',
+            'gallery2_field2.jpg',
+            'gallery.jpg',
+            'gallery2.jpg',
+            'gallery3.jpg',
+            'gallery4.jpg',
+            'gallery5.jpg',
+            'gallery6.jpg',
         ];
-
-        $timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00', '20:00 - 22:00', '22:00 - 00:00'];
-
-        foreach ($fields as $field) {
-            $minPrice = $venuePrices[$field->venue_id];
-            $bookedSlots = [];
-        
-            $selectedTimeSlots = array_rand(array_flip($timeSlots), 4);
-        
-            for ($i = 0; $i < 8; $i++) {
-                $price = $i == 0 ? $minPrice : rand($minPrice + 100000, $minPrice + 500000);
-                $timeSlot = $timeSlots[$i % count($timeSlots)];
-        
-                if (!Schedule::where('field_id', $field->id)
-                    ->where('date', Carbon::today()->toDateString())
-                    ->where('time_slots', $timeSlot)
-                    ->exists()) {
-                    Schedule::create([
-                        'date' => Carbon::today()->toDateString(),
-                        'time_slots' => $timeSlot,
-                        'status' => in_array($timeSlot, $selectedTimeSlots) ? 'booked' : 'available',
-                        'price' => $price,
-                        'field_id' => $field->id,
-                        'user_id' => rand(0, 1) ? 1 : null,
-                    ]);
-                    if (in_array($timeSlot, $selectedTimeSlots)) {
-                        $bookedSlots[] = $timeSlot;
-                    }
-                }
-            }
-        }
-
-        $galleryImages = ['gallery-inspire-arena-sulut.png', 'gallery-inspire-arena-sulut2.png', 'gallery-inspire-arena-sulut3.png'];
 
         foreach ($galleryImages as $image) {
             Gallery::create([
-                'venue_id' => $inspireArenaSulut->id,
-                'image' => $image,
-            ]);
-            Gallery::create([
-                'venue_id' => $koramilArena04->id,
-                'image' => $image,
-            ]);
-            Gallery::create([
-                'venue_id' => $ckmSupportCenter->id,
-                'image' => $image,
-            ]);
-            Gallery::create([
-                'venue_id' => $jiepSportCenter->id,
-                'image' => $image,
-            ]);
-            Gallery::create([
-                'venue_id' => $soccerSereniaMansion->id,
-                'image' => $image,
-            ]);
-            Gallery::create([
-                'venue_id' => $jsFutsal->id,
+                'venue_id' => $hjMuriyah->id,
                 'image' => $image,
             ]);
         }

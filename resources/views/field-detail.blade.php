@@ -10,11 +10,14 @@
 @endsection
 
 @section('content')
-    <div class="mx-5 mt-24 sm:mx-auto sm:max-w-6xl sm:mt-28" x-data="{ active: 'Schedule' }">
+    <div class="mx-5 mt-24 sm:mx-auto sm:max-w-6xl sm:mt-28 " x-data="{ active: 'Schedule' }">
         <div class="relative">
-            <img src="{{ asset('storage/' . $field->venue->large_image) }}" alt="{{ $field->venue->large_image }}">
-            <img src="{{ asset('storage/' . $field->venue->logo_image) }}" class="absolute w-12 bottom-3 left-10 m-4 lg:w-24"
-                alt="{{ $field->venue->logo_image }}">
+            <img src="{{ asset('storage/' . $field->image) }}" alt="{{ $field->venue->large_image }}"
+                class="object-cover h-[500px] w-full rounded-2xl">
+            @if ($field->venue->logo_image !== null)
+                <img src="{{ asset('storage/' . $field->venue->logo_image) }}"
+                    class="absolute w-12 bottom-3 left-10 m-4 lg:w-24" alt="{{ $field->venue->logo_image }}">
+            @endif
         </div>
         <h1 class="font-bold text-2xl mt-5 mb-1">{{ $field->name }}</h1>
         <a href="{{ route('venue.detail', ['slug' => $field->venue->slug]) }}"
@@ -34,6 +37,32 @@
             date: '{{ date('Y-m-d') }}',
             status: {{ json_encode($status) }},
             prices: {{ json_encode($prices) }},
+            originalPrices: {{ json_encode($originalPrices ?? []) }},
+            timePrices: {{ json_encode($timePrices) }},
+            hasDiscount: {{ json_encode($hasDiscount ?? false) }},
+            discount: {{ json_encode($discount ?? 0) }},
+            calculateTimePrice(timeSlot) {
+                const startTime = timeSlot.split(' - ')[0];
+                const startHour = parseInt(timeSlot.split(':')[0]);
+                return (startHour >= 8 && startHour < 16) ? this.timePrices.pagi : this.timePrices.sore;
+            },
+            calculateOriginalTimePrice(timeSlot) {
+                if (!this.hasDiscount) {
+                    return this.calculateTimePrice(timeSlot);
+                }
+                // Calculate original price before discount
+                const startHour = parseInt(timeSlot.split(':')[0]);
+                const price = (startHour >= 8 && startHour < 16) ? this.timePrices.pagi : this.timePrices.sore;
+                return Math.round(price / (1 - this.discount));
+            },
+            getSlotStatus(date, timeSlot) {
+                // Periksa apakah status tersedia di data dari server
+                if (this.status[date + ' ' + timeSlot]) {
+                    return this.status[date + ' ' + timeSlot];
+                }
+                // Default status jika tidak ada di server adalah 'available'
+                return 'available';
+            },
             formatPrice(price) {
                 return 'Rp ' + price.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             },
@@ -67,14 +96,22 @@
                 return dates;
             },
             timeSlots: [
-                '22:00 - 00:00',
-                '20:00 - 22:00',
-                '18:00 - 20:00',
-                '16:00 - 18:00',
-                '14:00 - 16:00',
-                '12:00 - 14:00',
-                '10:00 - 12:00',
-                '08:00 - 10:00',
+                '23:00 - 00:00',
+                '22:00 - 23:00',
+                '21:00 - 22:00',
+                '20:00 - 21:00',
+                '19:00 - 20:00',
+                '18:00 - 19:00',
+                '17:00 - 18:00',
+                '16:00 - 17:00',
+                '15:00 - 16:00',
+                '14:00 - 15:00',
+                '13:00 - 14:00',
+                '12:00 - 13:00',
+                '11:00 - 12:00',
+                '10:00 - 11:00',
+                '09:00 - 10:00',
+                '08:00 - 09:00'
             ],
         }">
             <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-32 2xl:gap-52">
@@ -90,6 +127,9 @@
                     <div class="mt-8 text-sm">
                         <p>*Periode <span class="text-my-red">Tanggal Booking</span> :</p>
                         <p>*Tap pada kolom waktu untuk memilih <span class="text-my-red">Jam Booking</span></p>
+                        <template x-if="hasDiscount">
+                            <p class="mt-2 font-semibold text-green-600">*Anda mendapatkan diskon 10% sebagai member</p>
+                        </template>
                     </div>
                 </div>
                 <div>
@@ -127,10 +167,12 @@
                     <template x-for="timeSlot in timeSlots">
                         <template x-for="nextDate in getNextDates(date, 6)">
                             <div @click="$store.cart.addToCart({
+                                field_id: Number('{{ $field->id }}'),
                                 venue: '{{ $field->venue->name }}',
                                 field: '{{ $field->name }}',
                                 date: `${nextDate} ${timeSlot}`,
-                                price: prices[nextDate + ' ' + timeSlot] || {{ $minPrice }},
+                                price: calculateTimePrice(timeSlot),
+                                payment_method: 'online',
                                 status: status[nextDate + ' ' + timeSlot]
                             })"
                                 class="border border-black rounded-lg p-4 flex flex-col"
@@ -140,13 +182,29 @@
                                 <p class="text-sm font-semibold text-end mb-3" x-text="formatDate(nextDate, 'schedule')">
                                 </p>
                                 <p class="text-md font-semibold text-center" x-text="timeSlot"></p>
-                                <p class="text-lg font-semibold text-center"
-                                    x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || {{ $minPrice }})"></p>
+                                <template x-if="hasDiscount">
+                                    <div class="text-center">
+                                        <p class="text-lg font-semibold line-through text-gray-600"
+                                            x-text="formatPrice(originalPrices[nextDate + ' ' + timeSlot] || 
+                                                Math.round(calculateTimePrice(timeSlot) / (1 - discount)))">
+                                        </p>
+                                        <p class="text-lg font-semibold text-green-600"
+                                            :class="$store.cart.isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ?
+                                                'text-white' : 'text-green-600'"
+                                            x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || calculateTimePrice(timeSlot))">
+                                        </p>
+                                    </div>
+                                </template>
+                                <template x-if="!hasDiscount">
+                                    <p class="text-lg font-semibold text-center"
+                                        x-text="formatPrice(prices[nextDate + ' ' + timeSlot] || calculateTimePrice(timeSlot))">
+                                    </p>
+                                </template>
                                 <p class="text-sm font-semibold text-center"
-                                    :class="status[nextDate + ' ' + timeSlot] === 'booked' ? 'text-black' : $store.cart
+                                    :class="getSlotStatus(nextDate, timeSlot) === 'booked' ? 'text-black' : $store.cart
                                         .isInCart(`${nextDate} ${timeSlot}`, '{{ $field->name }}') ? 'text-white' :
                                         'text-my-red'"
-                                    x-text="status[nextDate + ' ' + timeSlot] === 'booked' ? 'Booked' : 'Available'">
+                                    x-text="getSlotStatus(nextDate, timeSlot) === 'booked' ? 'Booked' : 'Available'">
                                 </p>
                             </div>
                         </template>
@@ -249,13 +307,16 @@
                 </div>
                 <div class="bg-my-grey rounded-xl py-6 px-10">
                     <p class="text-my-red font-bold text-lg">Informasi</p>
-                    <div class="flex items-center mt-5 gap-5">
-                        <img src="{{ asset('storage/instagram.png') }}" class="ms-1" alt="">
-                        <p>Instagram</p>
+                    <div class="flex items-center mt-5 gap-4">
+                        <a href="https://www.facebook.com/hjmuriyahsukses"><img src="{{ asset('storage/facebook.png') }}"
+                                class="ms-1 w-9 h-9" alt=""></a>
+                        <a href="https://www.facebook.com/hjmuriyahsukses">Facebook</a>
                     </div>
                     <div class="flex items-center mt-5 gap-4">
-                        <img src="{{ asset('storage/location.png') }}" alt="">
-                        <p>Asatu Area, Jl. RP. Soeroso No.1, Cikini, Menteng, Central Jakarta City, Jakarta 10330</p>
+                        <a href="https://maps.app.goo.gl/PHv9uSt5c9BoA8sn6?g_st=aw"><img
+                                src="{{ asset('storage/location.png') }}" alt=""></a>
+                        <a href="https://maps.app.goo.gl/PHv9uSt5c9BoA8sn6?g_st=aw">Jl. Jenderal Ahmad Yani No.1, Procot,
+                            Kec. Slawi, Kabupaten Tegal, Jawa Tengah 52412</a>
                     </div>
                 </div>
             </div>

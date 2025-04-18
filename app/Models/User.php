@@ -28,7 +28,12 @@ class User extends Authenticatable
         'email_verified_at',
     ];
 
-    public function schedule()
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'created_at' => 'datetime'
+    ];
+
+    public function schedules()
     {
         return $this->hasMany(Schedule::class, 'user_id');
     }

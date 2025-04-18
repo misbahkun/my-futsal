@@ -23,4 +23,9 @@ class Field extends Model
     {
         return $this->belongsTo(Venue::class);
     }
+
+    public function sport()
+    {
+        return $this->belongsTo(Sports::class);
+    }
 }
