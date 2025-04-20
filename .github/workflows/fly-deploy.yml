@@ -24,8 +24,9 @@ jobs:
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
-        bun-version: latest
-
+        with:
+          bun-version: latest
+          
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader
 
