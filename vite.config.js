@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
 export default defineConfig({
+    base: '/',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
@@ -11,7 +12,7 @@ export default defineConfig({
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
-        manifest: 'manifest.json', // Tentukan nama file manifest
+        manifest: 'manifest.json',
         rollupOptions: {
             input: ['resources/css/app.css', 'resources/js/app.js'],
             output: {
