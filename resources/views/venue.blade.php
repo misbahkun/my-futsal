@@ -7,34 +7,11 @@
 
 @section('content')
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 mt-28">
-        <h1 class="font-bold mt-12 mb-8 text-2xl justify-center flex">BOOKING <span class="text-[#E72929] px-2">VENUE</span>
-            OLAHRAGA TERBAIK</h1>
+        <h1 class="font-bold mt-12 mb-8 text-2xl justify-center flex">BOOKING <span class="text-[#E72929] px-2">VENUE</span></h1>
         <div class="bg-[#252525] mt-10 mb-10 rounded-xl py-6 px-4">
             <form action="{{ route('venue') }}" method="get">
                 <div
                     class="mx-auto max-w-6xl flex flex-col md:flex-row md:items-center md:space-x-5 space-y-4 md:space-y-0">
-                    <div class="flex-1 relative" x-data="{ selectedCity: '{{ request('city', 'Semua Kota') }}' }">
-                        <select name="city" x-model="selectedCity"
-                            class="w-full bg-white rounded-xl py-2 px-4 font-semibold shadow">
-                            <option value="Semua Kota">Semua Kota</option>
-                            @foreach ($cities as $city)
-                                <option value="{{ $city->city }}" @selected(request('city') == $city->city)>{{ $city->city }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="flex-1 relative" x-data="{ selectedSport: '{{ request('sport', 'Semua Olahraga') }}' }">
-                        <select name="sport" x-model="selectedSport"
-                            class="w-full bg-white rounded-xl py-2 px-4 font-semibold shadow">
-                            <option value="Semua Olahraga">Semua Olahraga</option>
-                            @foreach ($sports as $sport)
-                                <option value="{{ $sport->name }}" @selected(request('sport') == $sport->name)>{{ $sport->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
                     <div class="flex-1">
                         <input type="text" name="q" placeholder="Cari nama venue..." value="{{ request('q') }}"
                             class="w-full bg-white rounded-xl py-2 px-4 font-semibold shadow">

@@ -118,7 +118,11 @@ RUN rsync -ar /var/www/html/public-npm/ /var/www/html/public/ \
     && rm -rf /var/www/html/public-npm \
     && chown -R www-data:www-data /var/www/html/public
 
-# 5. Setup Entrypoint
+# 5. Setup application
+RUN php artisan storage:link \
+&& chown -R www-data:www-data /var/www/html/storage /var/www/html/public/storage
+
+# 6. Setup Entrypoint
 EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint"]

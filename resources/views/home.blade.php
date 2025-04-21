@@ -2,48 +2,13 @@
 
 @section('header')
     @include('components.navbar')
-    <div class="bg-[#252525] mt-16">
-        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-10">
-            <form action="{{ route('venue') }}" method="get">
-                <div class="mx-5 md:mx-0 flex flex-col space-y-5 md:space-y-0 md:flex-row md:space-x-5 rounded-xl">
-                    <div x-data="{ selectedCity: 'Semua Kota' }"
-                        class="relative flex items-center justify-between space-x-2 md:w-[18.75rem] bg-white rounded-xl py-1 px-4 cursor-pointer">
-                        <span class="font-bold mx-auto" x-text="selectedCity"></span>
-                        <img src="{{ asset('storage/menu.png') }}" alt="menu">
-                        <select x-model="selectedCity" name="city" class="absolute inset-0 opacity-0 cursor-pointer">
-                            <option value="Semua Kota">Semua Kota</option>
-                            @foreach ($cities as $city)
-                                <option value="{{ $city->city }}">{{ $city->city }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div x-data="{ selectedSport: 'Semua Olahraga' }"
-                        class="relative flex items-center justify-between space-x-2 md:w-[18.75rem] bg-white rounded-xl py-1 px-4 cursor-pointer">
-                        <span class="font-bold mx-auto" x-text="selectedSport"></span>
-                        <img src="{{ asset('storage/menu.png') }}" alt="menu">
-                        <select x-model="selectedSport" name="sport" class="absolute inset-0 opacity-0 cursor-pointer">
-                            <option value="Semua Olahraga">Semua Olahraga</option>
-                            @foreach ($sports as $sport)
-                                <option value="{{ $sport->name }}">{{ $sport->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="relative flex items-center justify-between space-x-2 md:w-[18.75rem] bg-white rounded-xl py-1 px-4 cursor-pointer">
-                        <input type="text" name="q" placeholder="Cari nama venue..." value="{{ request('q') }}"
-                            class="w-full bg-white rounded-xl py-2 px-4 font-semibold shadow">
-                    </div>
-                    <button type="submit"
-                        class="bg-my-red shadow-xl font-bold md:ms-2 md:w-[18.75rem] rounded-xl text-white py-2 px-5">Search</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <img class="fixed top-16 z-10 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
 @endsection
 
 @section('content')
     @include('components.hero')
     <div class="mx-5 sm:mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 class="font-bold mt-12 mb-8 text-xl">REKOMENDASI <span class="text-[#E72929]">VENUE</span></h2>
+        <h2 class="font-bold mt-12 mb-8 text-xl">VENUE <span class="text-[#E72929]">HJ. MURIYAH</span></h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-10 2xl:gap-7">
             @foreach ($venues as $venue)
                 <div class="flex flex-col">

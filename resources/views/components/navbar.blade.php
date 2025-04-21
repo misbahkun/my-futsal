@@ -2,8 +2,8 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <div class="flex h-16 items-center justify-between" x-data="{ menu: $store.menu }">
             <div class="flex items-center">
-                <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="My Futsal Logo">
-                <span class="font-bold"><a href="{{ route('home') }}">My Futsal</a></span>
+                <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="Hj Muriyah Logo">
+                <span class="font-bold"><a href="{{ route('home') }}">Hj Muriyah</a></span>
             </div>
             <div class="flex md:hidden gap-x-5">
                 <div class="relative cursor-pointer cart">

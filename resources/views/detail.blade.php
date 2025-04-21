@@ -71,13 +71,11 @@
                     <p class="text-my-red font-semibold mt-2">Asatu Area</p>
                     <ul class="list-disc list-inside">
                         <li>Tenants F&B Area</li>
-                        <li>Gym</li>
                         <li>Mini Soccer</li>
                     </ul>
                     <p class="text-my-red font-semibold mt-2">Fasilitas</p>
                     <ul class="list-disc list-inside">
                         <li>Shower Room</li>
-                        <li>Parkiran +40 Mobil 20+ Motor</li>
                     </ul>
                 </div>
                 <div class="bg-my-grey rounded-xl py-6 px-10">

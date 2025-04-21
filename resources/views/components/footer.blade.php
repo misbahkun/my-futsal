@@ -5,7 +5,7 @@
             <ul class="mt-3 text-black-46 font-semibold">
                 <li class="flex text-black items-center">
                     <img class="size-10" src="{{ asset('storage/image-removebg.png') }}" alt="My Futsal Logo">
-                    MY FUTSAL
+                    HJ. MURIYAH
                 </li>
                 <li><a href="{{ route('home') }}">Home</a></li>
                 <li><a href="#">Carer</a></li>
@@ -36,8 +36,7 @@
 
     <div class="flex flex-col sm:flex-row gap-y-5 sm:gap-y-0 mx-5 sm:ms-0 sm:items-center justify-between">
         <div class="flex flex-col">
-            <h1 class="font-bold text-lg">PT. YUNTA MANDIRI GROUP</h1>
-            <p class="text-black-46 font-semibold mt-3">&copy; 2025 MY FUTSAL All Right Reserved <span class="px-5"><a
+            <p class="text-black-46 font-semibold mt-3">&copy; 2025 HJ MURIYAH All Right Reserved <span class="px-5"><a
                         href="#">Privacy Policy</a></span><span><a href="#">Legal</a></span></p>
         </div>
         <div class="flex flex-col">
@@ -48,8 +47,7 @@
                 <a href="https://www.facebook.com/hjmuriyahsukses"><img
                         src="{{ asset('storage/facebook-no-color.png') }}" alt="facebook"></a>
             </div>
-            <p class="text-black-46 font-semibold mt-3">support@myfutsal<span class="ps-5"><a href="#">+62 812
-                        8655 8895</a></span></p>
+            <p class="text-black-46 font-semibold mt-3">support@hjmuriyah<span class="ps-5"><a href="https://wa.me/6289677950227" target="_blank" rel="noopener noreferrer" >089677950227</a></span></p>
         </div>
     </div>
 </div>
