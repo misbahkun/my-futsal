@@ -16,39 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-          
-      - name: Copy .env
-        run: cp .env.example .env
-      
-      - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader
-
-      - name: Install JS dependencies
-        run: bun install
-
-      - name: Build assets
-        run: bun run build
-
-      - name: List build output
-        run: ls -la public/build
-
-      - name: Set Laravel key
-        run: php artisan key:generate
-
-      - name: Set Laravel storage link
-        run: php artisan storage:link
-
       - name: Deploy to Fly.io
         uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy
+      - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
