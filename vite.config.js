@@ -10,7 +10,15 @@ export default defineConfig({
     ],
     build: {
         outDir: 'public/build',
-        manifest: true,
         emptyOutDir: true,
+        manifest: 'manifest.json', // Tentukan nama file manifest
+        rollupOptions: {
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            output: {
+                entryFileNames: 'assets/[name].[hash].js',
+                chunkFileNames: 'assets/[name].[hash].js',
+                assetFileNames: 'assets/[name].[hash][extname]',
+            },
+        },
     },
 });
