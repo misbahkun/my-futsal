@@ -36,7 +36,7 @@
 
     <div class="flex flex-col sm:flex-row gap-y-5 sm:gap-y-0 mx-5 sm:ms-0 sm:items-center justify-between">
         <div class="flex flex-col">
-            <p class="text-black-46 font-semibold mt-3">&copy; 2025 HJ MURIYAH All Right Reserved <span class="px-5"><a
+            <p class="text-black-46 font-semibold mt-3">&copy; 2025 Politeknik Harapan Bersama - My Futsal Hj Muriyah <span class="px-5"><a
                         href="#">Privacy Policy</a></span><span><a href="#">Legal</a></span></p>
         </div>
         <div class="flex flex-col">

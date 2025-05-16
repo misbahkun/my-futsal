@@ -49,9 +49,11 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
                 @yield('content')
             </main>
             <!-- ===== Main Content End ===== -->
+            <p class="text-gray-700 dark:text-gray-400 font-semibold mt-10 p-6">&copy; 2025 Politeknik Harapan Bersama - My Futsal Hj Muriyah</p>
         </div>
         <!-- ===== Content Area End ===== -->
     </div>
+
     <!-- ===== Page Wrapper End ===== -->
     @yield('modal')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
