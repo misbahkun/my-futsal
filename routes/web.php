@@ -37,13 +37,16 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('homeDashboard');
+        
+        // Add search route for transactions
+        Route::get('/search-transactions', [DashboardController::class, 'searchTransactions'])->name('dashboard.search-transactions');
+        
         Route::get('/users', [UsersController::class, 'index'])->name('admin.users');
         Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');
         Route::put('/users/{id}', [UsersController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UsersController::class, 'destroy'])->name('admin.users.destroy');
         Route::get('/users/{id}', [UsersController::class, 'show'])->name('admin.users.show');
         Route::get('/users/{id}/edit', [UsersController::class, 'getEditData'])->name('admin.users.edit');
-
 
         Route::get('/transactions', [TransactionController::class, 'index'])->name('admin.transactions');
         Route::get('/transactions/{id}', [TransactionController::class, 'show'])->name('admin.transactions.show');

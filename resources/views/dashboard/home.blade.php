@@ -88,13 +88,36 @@
 
             <div class="col-span-12">
                 <!-- ====== Table One Start -->
-                <div
-                    class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6"
+                     x-data="transactionSearch()" x-init="init()">
                     <div class="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                                 History Transaksi
                             </h3>
+                        </div>
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                x-model="searchQuery"
+                                @input.debounce.300ms="searchTransactions()"
+                                placeholder="Cari ID, nama, email, status, atau tanggal..."
+                                class="block w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm"
+                            >
+                            <!-- Search Icon -->
+                            <div x-show="!loading" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <!-- Loading indicator -->
+                            <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
@@ -142,142 +165,250 @@
                             </thead>
                             <!-- table header end -->
 
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                @if (Auth::user()->role === 'admin')
-                                    @forelse($allHistoryTransactions as $transaction)
-                                        <tr>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                        #{{ $transaction->id }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center gap-3">
-                                                        <div>
-                                                            <p
-                                                                class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                                {{ $transaction->user->full_name }}
-                                                            </p>
-                                                            <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                                                {{ $transaction->user->email }}
-                                                            </span>
-                                                        </div>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800" x-ref="tableBody">
+                                <template x-for="transaction in transactions" :key="transaction.id">
+                                    <tr>
+                                        <td class="py-3">
+                                            <div class="flex items-center">
+                                                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90"
+                                                   x-text="'#' + transaction.id">
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center">
+                                                <div class="flex items-center gap-3">
+                                                    <div>
+                                                        <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90"
+                                                           x-text="transaction.user.full_name">
+                                                        </p>
+                                                        <span class="text-gray-500 text-theme-xs dark:text-gray-400"
+                                                              x-text="transaction.user.email">
+                                                        </span>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                        Rp{{ number_format($transaction->amount, 0, ',', '.') }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                        {{ date('d M Y', strtotime($transaction->created_at)) }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p
-                                                        class="rounded-full {{ $transaction->status === 'paid'
-                                                            ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500'
-                                                            : ($transaction->status === 'pending_verification'
-                                                                ? 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400'
-                                                                : ($transaction->status === 'unpaid'
-                                                                    ? 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500'
-                                                                    : 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500')) }} px-2 py-0.5 text-theme-xs font-medium">
-                                                        {{ str_replace('_', ' ', ucfirst($transaction->status)) }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">
-                                                No transactions found
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                @else
-                                    @forelse($historyTransactions as $transaction)
-                                        <tr>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                        #{{ $transaction->id }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center gap-3">
-                                                        <div>
-                                                            <p
-                                                                class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                                {{ $transaction->user->full_name }}
-                                                            </p>
-                                                            <span class="text-gray-500 text-theme-xs dark:text-gray-400">
-                                                                {{ $transaction->user->email }}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                        Rp{{ number_format($transaction->amount, 0, ',', '.') }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                        {{ date('d M Y', strtotime($transaction->created_at)) }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <div class="flex items-center">
-                                                    <p
-                                                        class="rounded-full {{ $transaction->status === 'paid'
-                                                            ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500'
-                                                            : ($transaction->status === 'pending_verification'
-                                                                ? 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400'
-                                                                : ($transaction->status === 'unpaid'
-                                                                    ? 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500'
-                                                                    : 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500')) }} px-2 py-0.5 text-theme-xs font-medium">
-                                                        {{ str_replace('_', ' ', ucfirst($transaction->status)) }}
-                                                    </p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">
-                                                No transactions found
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400"
+                                                   x-text="formatCurrency(transaction.amount)">
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center">
+                                                <p class="text-gray-500 text-theme-sm dark:text-gray-400"
+                                                   x-text="formatDate(transaction.created_at)">
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="flex items-center">
+                                                <p class="rounded-full px-2 py-0.5 text-theme-xs font-medium"
+                                                   :class="getStatusClass(transaction.status)"
+                                                   x-text="formatStatus(transaction.status)">
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                
+                                <!-- No results found -->
+                                <tr x-show="transactions.length === 0 && !loading">
+                                    <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">
+                                        <span x-show="searchQuery">Tidak ada transaksi yang ditemukan untuk pencarian "<span x-text="searchQuery"></span>"</span>
+                                        <span x-show="!searchQuery">Tidak ada transaksi yang ditemukan</span>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
+                        
+                        <!-- Loading overlay -->
+                        <div x-show="loading" class="flex justify-center items-center py-8">
+                            <div class="flex items-center space-x-2">
+                                <svg class="animate-spin h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="text-gray-500 text-sm">Mencari...</span>
+                            </div>
+                        </div>
                     </div>
-                    <!-- ====== Table One End -->
-
-                    {{-- pagination --}}
-                    @if (Auth::user()->role === 'admin')
-                        {{ $allHistoryTransactions->links('custom.pagination') }}
-                    @else
-                        {{ $historyTransactions->links('custom.pagination') }}
-                    @endif
+                    
+                    <!-- Pagination -->
+                    <div x-show="pagination.last_page > 1" class="mt-4 flex items-center justify-between">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            Menampilkan <span x-text="pagination.from"></span> sampai <span x-text="pagination.to"></span> dari <span x-text="pagination.total"></span> hasil
+                        </div>
+                        <div class="flex space-x-1">
+                            <button 
+                                @click="goToPage(pagination.current_page - 1)"
+                                :disabled="pagination.current_page <= 1"
+                                :class="pagination.current_page <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                class="px-3 py-1 text-sm border rounded dark:border-gray-600 dark:text-gray-300">
+                                Previous
+                            </button>
+                            
+                            <template x-for="page in visiblePages" :key="page">
+                                <button 
+                                    @click="goToPage(page)"
+                                    :class="page === pagination.current_page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'"
+                                    class="px-3 py-1 text-sm border rounded dark:border-gray-600"
+                                    x-text="page">
+                                </button>
+                            </template>
+                            
+                            <button 
+                                @click="goToPage(pagination.current_page + 1)"
+                                :disabled="pagination.current_page >= pagination.last_page"
+                                :class="pagination.current_page >= pagination.last_page ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                class="px-3 py-1 text-sm border rounded dark:border-gray-600 dark:text-gray-300">
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                <!-- ====== Table One End -->
             </div>
         </div>
-    @endsection
+    </div>
+
+    <script>
+        function transactionSearch() {
+            return {
+                searchQuery: '',
+                transactions: [],
+                loading: false,
+                pagination: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 0,
+                    from: 0,
+                    to: 0
+                },
+                
+                init() {
+                    // Initialize with server-side data
+                    @if (Auth::user()->role === 'admin')
+                        this.transactions = @json($allHistoryTransactions->items());
+                        this.pagination = {
+                            current_page: {{ $allHistoryTransactions->currentPage() }},
+                            last_page: {{ $allHistoryTransactions->lastPage() }},
+                            per_page: {{ $allHistoryTransactions->perPage() }},
+                            total: {{ $allHistoryTransactions->total() }},
+                            from: {{ $allHistoryTransactions->firstItem() ?? 0 }},
+                            to: {{ $allHistoryTransactions->lastItem() ?? 0 }}
+                        };
+                    @else
+                        this.transactions = @json($historyTransactions->items());
+                        this.pagination = {
+                            current_page: {{ $historyTransactions->currentPage() }},
+                            last_page: {{ $historyTransactions->lastPage() }},
+                            per_page: {{ $historyTransactions->perPage() }},
+                            total: {{ $historyTransactions->total() }},
+                            from: {{ $historyTransactions->firstItem() ?? 0 }},
+                            to: {{ $historyTransactions->lastItem() ?? 0 }}
+                        };
+                    @endif
+                },
+                
+                async searchTransactions(page = 1) {
+                    this.loading = true;
+                    
+                    try {
+                        const response = await fetch(`{{ route('dashboard.search-transactions') }}?search=${encodeURIComponent(this.searchQuery)}&page=${page}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        
+                        const data = await response.json();
+                        this.transactions = data.data;
+                        this.pagination = data.pagination;
+                        
+                    } catch (error) {
+                        console.error('Error searching transactions:', error);
+                        // Handle error - maybe show a toast notification
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                goToPage(page) {
+                    if (page >= 1 && page <= this.pagination.last_page) {
+                        this.searchTransactions(page);
+                    }
+                },
+                
+                get visiblePages() {
+                    const current = this.pagination.current_page;
+                    const last = this.pagination.last_page;
+                    const pages = [];
+                    
+                    if (last <= 7) {
+                        for (let i = 1; i <= last; i++) {
+                            pages.push(i);
+                        }
+                    } else {
+                        if (current <= 3) {
+                            for (let i = 1; i <= 5; i++) {
+                                pages.push(i);
+                            }
+                            pages.push('...', last);
+                        } else if (current >= last - 2) {
+                            pages.push(1, '...');
+                            for (let i = last - 4; i <= last; i++) {
+                                pages.push(i);
+                            }
+                        } else {
+                            pages.push(1, '...');
+                            for (let i = current - 1; i <= current + 1; i++) {
+                                pages.push(i);
+                            }
+                            pages.push('...', last);
+                        }
+                    }
+                    
+                    return pages.filter(page => page !== '...');
+                },
+                
+                formatCurrency(amount) {
+                    return 'Rp' + new Intl.NumberFormat('id-ID').format(amount);
+                },
+                
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                },
+                
+                formatStatus(status) {
+                    return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                },
+                
+                getStatusClass(status) {
+                    const classes = {
+                        'paid': 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+                        'pending_verification': 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400',
+                        'unpaid': 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500',
+                        'failed': 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+                        'cancelled': 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
+                    };
+                    
+                    return classes[status] || 'bg-gray-50 text-gray-600 dark:bg-gray-500/15 dark:text-gray-500';
+                }
+            }
+        }
+    </script>
+@endsection
