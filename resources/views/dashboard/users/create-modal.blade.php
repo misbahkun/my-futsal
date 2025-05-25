@@ -105,14 +105,6 @@
                             <span class="text-sm text-error-500">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    <!-- Verification Status -->
-                    <div class="items-center mt-3 hidden">
-                        <input type="checkbox" id="verified" name="verified" value="1" checked
-                            class="h-4 w-4 text-brand-500 focus:ring-brand-500/10 border-gray-300 rounded">
-                        <label for="verified" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-400">Mark
-                            email as verified</label>
-                    </div>
                 </div>
             </div>
 

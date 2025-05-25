@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
         
         // Add search route for transactions
         Route::get('/search-transactions', [DashboardController::class, 'searchTransactions'])->name('dashboard.search-transactions');
+        Route::get('/transactions/search', [TransactionController::class, 'search'])->name('admin.transactions.search');
         
         Route::get('/users', [UsersController::class, 'index'])->name('admin.users');
         Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');
@@ -66,8 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/cancel/{transactionId}', [PaymentController::class, 'cancelTransactionManually'])->name('cancel-transaction');
     Route::post('/payment/{transactionId}/upload-proof', [PaymentController::class, 'uploadPaymentProof'])->name('payment.upload-proof');
 
-    // Invoice
+    // Invoice routes
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('user.invoices');
+    Route::get('/invoices/export', [InvoiceController::class, 'exportExcel'])->name('invoices.export');
     Route::get('/invoice/{transactionId}', [InvoiceController::class, 'showInvoice'])->name('invoice');
     Route::get('/invoice/{transactionId}/pdf', [InvoiceController::class, 'generateInvoicePdf'])->name('generate.invoice.pdf');
 });
