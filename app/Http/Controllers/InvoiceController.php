@@ -17,54 +17,44 @@ class InvoiceController extends Controller
     /**
      * Display a listing of the invoices with filters.
      */
-    public function index(Request $request)
+public function index(Request $request)
     {
         try {
-            $query = Transaction::where('status', 'paid')
-                ->with('user');
+            $query = Transaction::where('status', 'paid')->with('user');
 
-            // Check if the user is not an admin, filter by user_id
             if (Auth::user()->role !== 'admin') {
                 $query->where('user_id', Auth::id());
             }
 
-            // Apply date filters with simplified logic
-            if ($request->filled('filter_type')) {
-                $filterType = $request->filter_type;
+            if ($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom') {
+                $startDate = Carbon::parse($request->start_date)->startOfDay();
+                $endDate = Carbon::parse($request->end_date)->endOfDay();
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            } elseif ($request->filled('filter_type')) {
                 $now = Carbon::now();
-
-                switch ($filterType) {
+                switch ($request->filter_type) {
                     case 'day':
-                        // Filter by today
                         $query->whereDate('created_at', $now->toDateString());
                         break;
-
                     case 'week':
-                        // Filter by this week (Monday to Sunday)
                         $startOfWeek = $now->startOfWeek();
                         $endOfWeek = $now->copy()->endOfWeek();
                         $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
                         break;
-
                     case 'month':
-                        // Filter by this month
                         $query->whereYear('created_at', $now->year)
                             ->whereMonth('created_at', $now->month);
                         break;
-
                     case 'year':
-                        // Filter by this year
                         $query->whereYear('created_at', $now->year);
                         break;
                 }
             }
 
-            // Apply payment method filter
             if ($request->filled('payment_method') && $request->payment_method !== 'all') {
                 $query->where('payment_method', $request->payment_method);
             }
 
-            // Apply amount range filter (new dropdown logic)
             if ($request->filled('amount_range')) {
                 $range = explode('-', $request->amount_range);
                 if (count($range) == 2) {
@@ -74,7 +64,6 @@ class InvoiceController extends Controller
                 }
             }
 
-            // Fallback to individual min/max amount filters if provided
             if ($request->filled('min_amount')) {
                 $query->where('amount', '>=', $request->min_amount);
             }
@@ -84,16 +73,18 @@ class InvoiceController extends Controller
 
             $invoices = $query->orderBy('created_at', 'desc')->paginate(10);
 
-            // Calculate summary statistics for the filtered results
             $totalAmount = Transaction::where('status', 'paid')
                 ->when(Auth::user()->role !== 'admin', function ($q) {
                     return $q->where('user_id', Auth::id());
                 })
-                ->when($request->filled('filter_type'), function ($q) use ($request) {
-                    $filterType = $request->filter_type;
+                ->when($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom', function ($q) use ($request) {
+                    $startDate = Carbon::parse($request->start_date)->startOfDay();
+                    $endDate = Carbon::parse($request->end_date)->endOfDay();
+                    return $q->whereBetween('created_at', [$startDate, $endDate]);
+                })
+                ->when($request->filled('filter_type') && $request->filter_type !== 'custom', function ($q) use ($request) {
                     $now = Carbon::now();
-
-                    switch ($filterType) {
+                    switch ($request->filter_type) {
                         case 'day':
                             return $q->whereDate('created_at', $now->toDateString());
                         case 'week':
@@ -138,26 +129,22 @@ class InvoiceController extends Controller
         }
     }
 
-    /**
-     * Export invoices to Excel
-     */
     public function exportExcel(Request $request)
     {
         try {
-            $query = Transaction::where('status', 'paid')
-                ->with('user');
+            $query = Transaction::where('status', 'paid')->with('user');
 
-            // Check if the user is not an admin, filter by user_id
             if (Auth::user()->role !== 'admin') {
                 $query->where('user_id', Auth::id());
             }
 
-            // Apply the same filters as in index method
-            if ($request->filled('filter_type')) {
-                $filterType = $request->filter_type;
+            if ($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom') {
+                $startDate = Carbon::parse($request->start_date)->startOfDay();
+                $endDate = Carbon::parse($request->end_date)->endOfDay();
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            } elseif ($request->filled('filter_type')) {
                 $now = Carbon::now();
-
-                switch ($filterType) {
+                switch ($request->filter_type) {
                     case 'day':
                         $query->whereDate('created_at', $now->toDateString());
                         break;
@@ -180,7 +167,6 @@ class InvoiceController extends Controller
                 $query->where('payment_method', $request->payment_method);
             }
 
-            // Apply amount range filter
             if ($request->filled('amount_range')) {
                 $range = explode('-', $request->amount_range);
                 if (count($range) == 2) {
@@ -190,7 +176,6 @@ class InvoiceController extends Controller
                 }
             }
 
-            // Fallback filters
             if ($request->filled('min_amount')) {
                 $query->where('amount', '>=', $request->min_amount);
             }
@@ -200,18 +185,15 @@ class InvoiceController extends Controller
 
             $invoices = $query->orderBy('created_at', 'desc')->get();
 
-            // Create new Spreadsheet
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Set headers
             $headers = ['No. Invoice', 'Tanggal', 'Total', 'Metode Pembayaran'];
             if (Auth::user()->role === 'admin') {
                 $headers[] = 'User';
             }
             $headers[] = 'Status';
 
-            // Write headers with styling
             $column = 'A';
             foreach ($headers as $header) {
                 $sheet->setCellValue($column . '1', $header);
@@ -223,7 +205,6 @@ class InvoiceController extends Controller
                 $column++;
             }
 
-            // Write data
             $row = 2;
             foreach ($invoices as $invoice) {
                 $invoiceNumber = 'INV-' . $invoice->id . '-' . date('Ymd', strtotime($invoice->created_at));
@@ -246,7 +227,6 @@ class InvoiceController extends Controller
                 $row++;
             }
 
-            // Add summary at the bottom with styling
             $row += 2;
             $sheet->setCellValue('A' . $row, 'RINGKASAN EXPORT');
             $sheet->getStyle('A' . $row)->getFont()->setBold(true);
@@ -267,7 +247,6 @@ class InvoiceController extends Controller
             $sheet->setCellValue('B' . $row, date('d F Y H:i:s'));
             $sheet->getStyle('A' . $row . ':B' . $row)->getFont()->setBold(true);
 
-            // Create writer and download
             $writer = new Xlsx($spreadsheet);
             $fileName = 'invoices_export_' . date('Y-m-d_H-i-s') . '.xlsx';
             $tempFile = tempnam(sys_get_temp_dir(), $fileName);
