@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::get('/storage/{filename}', function ($filename) {
+    $path = storage_path('app/public/' . $filename);
+    if (!file_exists($path) || !in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'png', 'pdf', 'svg'])) {
+        abort(404);
+    }
+    return response()->file($path);
+})->where('filename', '.*');
+
 Route::get('/venue', [VenueController::class, 'index'])->name('venue');
 Route::get('/v/{slug}', [VenueController::class, 'detail'])->name('venue.detail');
 
