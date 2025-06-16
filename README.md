@@ -53,6 +53,7 @@ REST API (untuk AJAX/Alpine.js)
 
 ## Desain Database
 
+![Screenshot from 2025-06-16 14-14-55](https://github.com/user-attachments/assets/27bfec6a-7f83-46f9-ad63-942683829a74)
 
 ---
 
