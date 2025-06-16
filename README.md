@@ -63,9 +63,9 @@ REST API (untuk AJAX/Alpine.js)
 1. **User** mendaftar/login.
 2. **User** memilih venue & lapangan, lalu melakukan booking.
 3. Sistem menampilkan jadwal & harga, user memilih waktu.
-4. **User** melakukan pembayaran (transfer/manual/otomatis).
+4. **User** melakukan pembayaran (transfer/manual).
 5. **Admin** memverifikasi pembayaran.
-6. Sistem meng-generate **invoice** dan mengirim notifikasi ke user.
+6. Sistem meng-generate **invoice**.
 7. **User/Admin** dapat melihat riwayat transaksi dan invoice.
 
 ### **Hak Akses**
