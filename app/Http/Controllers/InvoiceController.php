@@ -73,55 +73,9 @@ public function index(Request $request)
 
             $invoices = $query->orderBy('created_at', 'desc')->paginate(10);
 
-            $totalAmount = Transaction::where('status', 'paid')
-                ->when(Auth::user()->role !== 'admin', function ($q) {
-                    return $q->where('user_id', Auth::id());
-                })
-                ->when($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom', function ($q) use ($request) {
-                    $startDate = Carbon::parse($request->start_date)->startOfDay();
-                    $endDate = Carbon::parse($request->end_date)->endOfDay();
-                    return $q->whereBetween('created_at', [$startDate, $endDate]);
-                })
-                ->when($request->filled('filter_type') && $request->filter_type !== 'custom', function ($q) use ($request) {
-                    $now = Carbon::now();
-                    switch ($request->filter_type) {
-                        case 'day':
-                            return $q->whereDate('created_at', $now->toDateString());
-                        case 'week':
-                            $startOfWeek = $now->startOfWeek();
-                            $endOfWeek = $now->copy()->endOfWeek();
-                            return $q->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
-                        case 'month':
-                            return $q->whereYear('created_at', $now->year)
-                                ->whereMonth('created_at', $now->month);
-                        case 'year':
-                            return $q->whereYear('created_at', $now->year);
-                    }
-                    return $q;
-                })
-                ->when($request->filled('payment_method') && $request->payment_method !== 'all', function ($q) use ($request) {
-                    return $q->where('payment_method', $request->payment_method);
-                })
-                ->when($request->filled('amount_range'), function ($q) use ($request) {
-                    $range = explode('-', $request->amount_range);
-                    if (count($range) == 2) {
-                        $minAmount = (int) $range[0];
-                        $maxAmount = (int) $range[1];
-                        return $q->whereBetween('amount', [$minAmount, $maxAmount]);
-                    }
-                    return $q;
-                })
-                ->when($request->filled('min_amount'), function ($q) use ($request) {
-                    return $q->where('amount', '>=', $request->min_amount);
-                })
-                ->when($request->filled('max_amount'), function ($q) use ($request) {
-                    return $q->where('amount', '<=', $request->max_amount);
-                })
-                ->sum('amount');
-
             $totalCount = $query->count();
 
-            return view('dashboard.invoices.index', compact('invoices', 'totalAmount', 'totalCount'));
+            return view('dashboard.invoices.index', compact('invoices', 'totalCount'));
         } catch (\Exception $e) {
             Log::error("Error retrieving invoices: " . $e->getMessage());
             return redirect()->route('homeDashboard')

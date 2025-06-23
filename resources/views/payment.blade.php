@@ -39,12 +39,19 @@
     </style>
 @endpush
 
+@push('head-scripts')
+    <script>
+        window.isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
+    </script>
+@endpush
+
 @section('content')
     <div class="mx-5 sm:mx-auto max-w-max-w-6.5xl mt-24 md:mt-32" x-data="{
         phoneNumber: '{{ $phoneNumber ?: '' }}',
         email: '{{ $userEmail }}',
         cart: $store.cart,
         payment: $store.payment,
+        snapToken: '{{ $snapToken ?? '' }}', // Store snapToken from server
     }">
         <div class="flex flex-col md:flex-row md:justify-between md:space-x-5 space-y-5 md:space-y-0 mb-12">
             <div class="h-[37rem] md:h-[35rem] overflow-y-auto md:w-7/12 ">
@@ -155,55 +162,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-my-grey rounded-xl py-6 px-10 mt-5" x-data="{ open: false }">
-                    <p class="font-bold text-lg mb-3">Metode Pembayaran <span class="text-red-500">*</span></p>
-
-                    <div class="border-t border-white">
-                        <!-- Parent clickable element -->
-                        <div @click="open = !open"
-                            class="select-none flex justify-between items-center shadow-lg rounded-t-lg bg-white border-my-red border-t-2 pt-4 pb-2 px-3 mt-5 cursor-pointer">
-                            <div class="flex gap-x-3 ms-3">
-                                <img src="{{ asset('storage/bank_account.png') }}"
-                                    class="w-14 h-fit border rounded-lg px-1 py-0" alt="transfer bank account">
-                                <div class="flex flex-col">
-                                    <p class="text-sm font-semibold">Transfer Bank Account</p>
-                                    <div class="flex space-x-3">
-                                        <img src="{{ asset('storage/bca-bank-central-asia.svg') }}" class="w-10 h-10"
-                                            alt="bank bca">
-                                    </div>
-                                </div>
-                            </div>
-                            <img :src="open ? '{{ asset('storage/up-arrows.png') }}' :
-                                '{{ asset('storage/down-arrows.png') }}'"
-                                class="w-5 h-5 me-5" alt="chevron">
-                        </div>
-
-                        <div x-show="open" class="rounded-b-lg overflow-hidden shadow-lg select-none" x-transition>
-                            <div class="bg-white">
-                                <!-- Bank Options -->
-                                @foreach ($banks as $bank)
-                                    <label
-                                        class="flex items-center gap-x-3 ps-6 pt-4 pb-3 px-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100">
-                                        <img src="{{ asset('storage/' . $bank->image) }}"
-                                            class="w-14 h-fit rounded-lg px-1 py-2" alt="{{ $bank->name }}">
-
-                                        <div class="flex flex-col">
-                                            <p class="text-sm font-semibold">{{ $bank->name }}</p>
-                                            <p class="text-sm text-gray-500">{{ $bank->type }}</p>
-                                        </div>
-                                        <input type="radio" name="payment_method"
-                                            value="{{ strtolower($bank->name) }}"
-                                            {{ old('payment_method') == strtolower($bank->name) ? 'checked' : '' }}
-                                            class="h-4 w-4 ms-auto me-5 text-my-red" form="paymentForm">
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                        @error('payment_method')
-                            <span class="text-red-500 text-xs block mt-2">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
             </div>
             <div class="md:w-5/12">
                 <div class="h-max py-6 px-10 shadow-xl rounded-lg border-my-red border-t-2">
@@ -259,14 +217,14 @@
                         class="text-my-red">Syarat dan Ketentuan</a> serta
                     <a href="#" class="text-my-red">Kebijakan privasi.</a>
                 </p>
-                <form id="paymentForm" action="{{ route('book') }}" method="POST">
+                <form id="paymentForm" action="{{ route('book') }}" method="POST" x-data="{ processing: false }">
                     @csrf
                     @foreach ($items as $item)
                         <input type="hidden" name="items[]" value="{{ json_encode($item) }}">
                     @endforeach
-
-                    <button type="button" @click="payment.showVerificationSelector()"
-                        class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer">
+                    <button type="button" @click="payment.showVerificationSelector()" :disabled="processing"
+                        class="w-full bg-my-red font-bold text-xl text-white py-2 rounded-lg hover:bg-red-800 cursor-pointer"
+                        x-bind:class="{ 'opacity-50 cursor-not-allowed': processing }">
                         Bayar Sekarang
                     </button>
                 </form>
@@ -458,15 +416,57 @@
 @endsection
 
 @push('scripts')
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+    </script>
     <script>
-        window.isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
-        // Make the sendVerificationCode function available globally
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length < 1) {
+                Swal.fire({
+                    title: 'Keranjang Kosong',
+                    text: 'Silakan pilih lapangan terlebih dahulu.',
+                    icon: 'warning',
+                    confirmButtonColor: '#DC2626',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = "{{ route('venue') }}";
+                });
+            }
+
+            // Handle snapToken for logged-in users
+            const snapToken = '{{ $snapToken ?? '' }}';
+            if (snapToken && window.isLoggedIn) {
+                window.snap.pay(snapToken, {
+                    onSuccess: function(result) {
+                        console.log('Payment success:', result);
+                        Alpine.store('cart').clearCart();
+                        window.location.href = '{{ route('home') }}';
+                    },
+                    onPending: function(result) {
+                        console.log('Payment pending:', result);
+                        window.location.href = '{{ route('home') }}';
+                    },
+                    onError: function(result) {
+                        console.log('Payment error:', result);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan saat pembayaran.',
+                            icon: 'error',
+                            confirmButtonColor: '#DC2626',
+                            confirmButtonText: 'OK'
+                        });
+                    },
+                    onClose: function() {
+                        console.log('Payment popup closed');
+                    }
+                });
+            }
+        });
+
         window.sendVerificationCode = function(method, phoneNumber, email, successCallback) {
-            // Use the phone number from the store for whatsapp/miscall methods
             const finalPhoneNumber = (method === 'whatsapp' || method === 'miscall') ?
                 window.Alpine.store('payment').currentPhoneNumber :
                 phoneNumber;
-            // Show loading indicator
             Swal.fire({
                 title: 'Mengirim kode verifikasi',
                 text: 'Mohon tunggu sebentar...',
@@ -477,19 +477,9 @@
                 }
             });
 
-            console.log('Mengirim kode verifikasi dengan metode: ' + method);
-            console.log('Data: ', {
-                method,
-                finalPhoneNumber,
-                email
-            });
-
-
-            // Get CSRF token
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
             if (!csrfToken) {
-                console.error('CSRF token tidak ditemukan! Pastikan meta tag csrf-token ada di halaman.');
+                console.error('CSRF token tidak ditemukan!');
                 Swal.fire({
                     title: 'Error!',
                     text: 'CSRF token tidak ditemukan.',
@@ -514,8 +504,6 @@
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-
-                    // Tangani respons non-JSON
                     const contentType = response.headers.get('content-type');
                     if (!contentType || !contentType.includes('application/json')) {
                         return response.text().then(text => {
@@ -523,20 +511,17 @@
                             throw new Error('Format respons tidak valid');
                         });
                     }
-
                     if (!response.ok) {
                         return response.json().then(errData => {
                             console.error('Error response:', errData);
                             throw new Error(errData.message || 'Network error: ' + response.status);
                         });
                     }
-
                     return response.json();
                 })
                 .then(data => {
                     console.log('Response data:', data);
                     Swal.close();
-
                     if (data.success) {
                         if (typeof successCallback === 'function') {
                             successCallback();
@@ -554,7 +539,6 @@
                 .catch(error => {
                     console.error('Fetch error:', error);
                     Swal.close();
-
                     Swal.fire({
                         title: 'Error!',
                         text: 'Terjadi kesalahan',
@@ -564,21 +548,5 @@
                     });
                 });
         };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || []
-
-            if (cart.length < 1) {
-                Swal.fire({
-                    title: 'Keranjang Kosong',
-                    text: 'Silakan pilih lapangan terlebih dahulu.',
-                    icon: 'warning',
-                    confirmButtonColor: '#DC2626',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = "{{ route('venue') }}"
-                })
-            }
-        })
     </script>
 @endpush

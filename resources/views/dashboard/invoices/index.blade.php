@@ -121,7 +121,7 @@
             @endif
 
             <!-- Summary Statistics -->
-            @if (isset($totalAmount) && isset($totalCount))
+            @if (isset($totalCount))
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
                         <div class="flex items-center">
@@ -139,25 +139,6 @@
                                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Invoice</p>
                                 <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($totalCount) }}
                                 </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div
-                                    class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path
-                                            d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pendapatan</p>
-                                <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                                    Rp{{ number_format($totalAmount, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     </div>

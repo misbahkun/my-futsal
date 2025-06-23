@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\MyAccount;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
@@ -19,18 +21,66 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        // Check if user is admin
-        if (Auth::user()->role !== 'admin') {
-            return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
+        try {
+            // Check if user is admin
+            if (Auth::user()->role !== 'admin') {
+                return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
+            }
+
+            $query = Transaction::with('user');
+
+            if ($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom') {
+                $startDate = Carbon::parse($request->start_date)->startOfDay();
+                $endDate = Carbon::parse($request->end_date)->endOfDay();
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            } elseif ($request->filled('filter_type')) {
+                $now = Carbon::now();
+                switch ($request->filter_type) {
+                    case 'day':
+                        $query->whereDate('created_at', $now->toDateString());
+                        break;
+                    case 'week':
+                        $startOfWeek = $now->startOfWeek();
+                        $endOfWeek = $now->copy()->endOfWeek();
+                        $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                        break;
+                    case 'month':
+                        $query->whereYear('created_at', $now->year)
+                            ->whereMonth('created_at', $now->month);
+                        break;
+                    case 'year':
+                        $query->whereYear('created_at', $now->year);
+                        break;
+                }
+            }
+
+            if ($request->filled('amount_range')) {
+                $range = explode('-', $request->amount_range);
+                if (count($range) == 2) {
+                    $minAmount = (int)$range[0];
+                    $maxAmount = (int)$range[1];
+                    $query->whereBetween('amount', [$minAmount, $maxAmount]);
+                }
+            }
+
+            if ($request->filled('min_amount')) {
+                $query->where('amount', '>=', $request->min_amount);
+            }
+            if ($request->filled('max_amount')) {
+                $query->where('amount', '<=', $request->max_amount);
+            }
+
+            $transactions = $query->orderBy('created_at', 'desc')->paginate(10);
+
+            // Calculate summary statistics
+            $totalAmount = $query->sum('amount');
+            $totalCount = $query->count();
+
+            return view('dashboard.transactions.index', compact('transactions', 'totalAmount', 'totalCount'));
+        } catch (\Exception $e) {
+            Log::error("Error retrieving transactions: " . $e->getMessage());
+            return redirect()->route('homeDashboard')->with('error', 'Terjadi kesalahan saat memuat daftar transaksi: ' . $e->getMessage());
         }
-
-        $banks = MyAccount::select('name')->get();
-        $users = User::all();
-
-        // Handle initial load or non-AJAX requests
-        $transactions = Transaction::with('user')->latest()->paginate(10);
-
-        return view('dashboard.transactions.index', compact('transactions', 'users', 'banks'));
     }
 
     /**

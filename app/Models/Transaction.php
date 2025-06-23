@@ -10,11 +10,12 @@ class Transaction extends Model
         'user_id',
         'status',
         'amount',
-        'payment_method',
-        'payment_proof'
+        'midtrans_order_id',
+        'midtrans_status',
+        'payment_type'
     ];
 
-    public function schedule()
+    public function schedules()
     {
         return $this->hasOne(Schedule::class);
     }
