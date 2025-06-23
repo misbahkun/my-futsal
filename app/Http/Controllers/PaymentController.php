@@ -25,6 +25,7 @@ class PaymentController extends Controller
                 'transaction_status' => $notif->transaction_status,
                 'payment_type' => $notif->payment_type,
                 'fraud_status' => $notif->fraud_status,
+                'notif' => $notif
             ]);
 
             // Find the transaction

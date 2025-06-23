@@ -267,15 +267,10 @@ class BookingController extends Controller
       }
     } catch (\Exception $e) {
       Log::error("Error in book: " . $e->getMessage());
-        return view('payment', compact(
-          'items',
-          'totalPrice',
-          'hasDiscount',
-          'discountPercentage',
-          'originalTotalPrice',
-          'phoneNumber',
-          'userEmail'
-        ));
+      return response()->json([
+        'success' => false,
+        'message' => 'Terjadi kesalahan saat memesan: ' . $e->getMessage()
+      ], 400);
     }
   }
 
