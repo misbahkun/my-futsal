@@ -9,7 +9,6 @@
         <div x-data="{ pageName: 'Invoices' }">
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="pageName"></h2>
-
                 <nav>
                     <ol class="flex items-center gap-1.5">
                         <li>
@@ -41,15 +40,15 @@
                             <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
                         </svg>
                         Filter Data
-                        @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range']))
+                        @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range', 'start_date', 'end_date']))
                             <span class="ml-2 bg-brand-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                {{ collect([request('filter_type'), request('payment_method'), request('amount_range')])->filter()->count() }}
+                                {{ collect([request('filter_type'), request('payment_method'), request('amount_range'), request('start_date'), request('end_date')])->filter()->count() }}
                             </span>
                         @endif
                     </button>
 
-                    <!-- Reset Filter (show only when filters are active) -->
-                    @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range']))
+                    <!-- Reset Filter -->
+                    @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range', 'start_date', 'end_date']))
                         <a href="{{ route('user.invoices') }}"
                             class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 inline-flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -75,7 +74,7 @@
             </div>
 
             <!-- Active Filters Display -->
-            @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range']))
+            @if (request()->hasAny(['filter_type', 'payment_method', 'amount_range', 'start_date', 'end_date']))
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
@@ -86,7 +85,7 @@
                             <span class="text-sm font-medium text-blue-800 dark:text-white">Filter Aktif:</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            @if (request('filter_type'))
+                            @if (request('filter_type') && request('filter_type') !== 'custom')
                                 <span
                                     class="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-white px-2 py-1 rounded text-xs font-medium">
                                     {{ ucfirst(request('filter_type')) }}
@@ -101,7 +100,19 @@
                             @if (request('amount_range'))
                                 <span
                                     class="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-white px-2 py-1 rounded text-xs font-medium">
-                                    Rp {{ request('amount_range') }}
+                                    Rp {{ str_replace('-', ' - ', request('amount_range')) }}
+                                </span>
+                            @endif
+                            @if (request('start_date'))
+                                <span
+                                    class="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-white px-2 py-1 rounded text-xs font-medium">
+                                    Dari: {{ date('d/m/Y', strtotime(request('start_date'))) }}
+                                </span>
+                            @endif
+                            @if (request('end_date'))
+                                <span
+                                    class="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-white px-2 py-1 rounded text-xs font-medium">
+                                    Sampai: {{ date('d/m/Y', strtotime(request('end_date'))) }}
                                 </span>
                             @endif
                         </div>
@@ -131,7 +142,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
@@ -166,7 +176,6 @@
                         </span>
                     </div>
                 </div>
-
                 <div class="p-5 sm:p-6">
                     <div class="max-w-full overflow-x-auto">
                         <table class="w-full table-auto">
@@ -283,7 +292,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Pagination -->
                     @if ($invoices->hasPages())
                         <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -316,18 +324,24 @@
                     </button>
                 </div>
             </div>
-
             <!-- Modal Body -->
             <form method="GET" action="{{ route('user.invoices') }}" class="p-6 space-y-6">
-                <!-- Period Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <!-- Labels in 2-column grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Periode Waktu
                     </label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Rentang Jumlah
+                    </label>
+                </div>
+                <!-- Radio buttons and content -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Periode Waktu Radio Buttons -->
                     <div class="space-y-2">
                         <label class="flex items-center">
                             <input type="radio" name="filter_type" value=""
-                                {{ !request('filter_type') ? 'checked' : '' }}
+                                {{ !request('filter_type') && !request('start_date') && !request('end_date') ? 'checked' : '' }}
                                 class="text-brand-500 focus:ring-brand-500 mr-3">
                             <span class="text-gray-700 dark:text-gray-300">Semua Periode</span>
                         </label>
@@ -355,14 +369,14 @@
                                 class="text-brand-500 focus:ring-brand-500 mr-3">
                             <span class="text-gray-700 dark:text-gray-300">Tahun Ini</span>
                         </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="filter_type" value="custom"
+                                {{ request('start_date') || request('end_date') ? 'checked' : '' }}
+                                class="text-brand-500 focus:ring-brand-500 mr-3">
+                            <span class="text-gray-700 dark:text-gray-300">Rentang Tanggal</span>
+                        </label>
                     </div>
-                </div>
-
-                <!-- Amount Range Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                        Rentang Jumlah
-                    </label>
+                    <!-- Rentang Jumlah Radio Buttons -->
                     <div class="space-y-2">
                         <label class="flex items-center">
                             <input type="radio" name="amount_range" value=""
@@ -396,11 +410,28 @@
                         </label>
                     </div>
                 </div>
-
+                <!-- Custom Date Range -->
+                <div id="dateRangeSection" class="{{ !request('start_date') && !request('end_date') ? 'hidden' : '' }}">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Pilih Tanggal
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Dari</label>
+                            <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}"
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Sampai</label>
+                            <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}"
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        </div>
+                    </div>
+                </div>
                 <!-- Modal Footer -->
                 <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <button type="button" onclick="closeFilterModal()"
-                        class="w-full sm:w-auto px-4 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors">
+                        class="w-full sm:w-auto px-4 py-2.5 text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors">
                         Batal
                     </button>
                     <button type="submit"
@@ -416,56 +447,155 @@
         </div>
     </div>
 
-    <script>
-        // Modal functions
-        function openFilterModal() {
-            document.getElementById('filterModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFilterModal() {
-            document.getElementById('filterModal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('filterModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFilterModal();
+    @push('script')
+        <script>
+            function openFilterModal() {
+                document.getElementById('filterModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             }
-        });
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeFilterModal();
+            function closeFilterModal() {
+                document.getElementById('filterModal').classList.add('hidden');
+                document.body.style.overflow = '';
             }
-        });
 
-        // Export to Excel function
-        function exportToExcel() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const exportUrl = '{{ route('invoices.export') }}?' + urlParams.toString();
+            document.getElementById('filterModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFilterModal();
+                }
+            });
 
-            // Show loading state
-            const exportBtn = event.target.closest('button');
-            const originalContent = exportBtn.innerHTML;
-            exportBtn.innerHTML = `
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeFilterModal();
+                }
+            });
+
+            // Toggle date range section
+            document.querySelectorAll('input[name="filter_type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const dateRangeSection = document.getElementById('dateRangeSection');
+                    if (this.value === 'custom') {
+                        dateRangeSection.classList.remove('hidden');
+                    } else {
+                        dateRangeSection.classList.add('hidden');
+                        document.getElementById('start_date').value = '';
+                        document.getElementById('end_date').value = '';
+                        // Clear Flatpickr altInput values
+                        const startPicker = document.getElementById('start_date')._flatpickr;
+                        const endPicker = document.getElementById('end_date')._flatpickr;
+                        if (startPicker) startPicker.clear();
+                        if (endPicker) endPicker.clear();
+                    }
+                });
+            });
+
+            // Initialize Flatpickr with Indonesian locale
+            flatpickr('#start_date', {
+                altInput: true,
+                altFormat: 'd/m/Y', // Display dd/mm/yyyy
+                dateFormat: 'Y-m-d', // Submit yyyy-mm-dd
+                maxDate: 'today',
+                locale: {
+                    firstDayOfWeek: 1, // Monday as first day
+                    weekdays: {
+                        shorthand: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                        longhand: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+                    },
+                    months: {
+                        shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                        longhand: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus',
+                            'September', 'Oktober', 'November', 'Desember'
+                        ]
+                    }
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    const endPicker = document.getElementById('end_date')._flatpickr;
+                    if (selectedDates[0]) {
+                        endPicker.set('minDate', selectedDates[0]);
+                    }
+                }
+            });
+
+            flatpickr('#end_date', {
+                altInput: true,
+                altFormat: 'd/m/Y', // Display dd/mm/yyyy
+                dateFormat: 'Y-m-d', // Submit yyyy-mm-dd
+                maxDate: 'today',
+                locale: {
+                    firstDayOfWeek: 1,
+                    weekdays: {
+                        shorthand: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                        longhand: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+                    },
+                    months: {
+                        shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                        longhand: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus',
+                            'September', 'Oktober', 'November', 'Desember'
+                        ]
+                    }
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    const startPicker = document.getElementById('start_date')._flatpickr;
+                    if (selectedDates[0]) {
+                        startPicker.set('maxDate', selectedDates[0]);
+                    }
+                }
+            });
+
+            // Form validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const filterType = document.querySelector('input[name="filter_type"]:checked').value;
+                const startDate = document.getElementById('start_date')._flatpickr?.altInput.value || '';
+                const endDate = document.getElementById('end_date')._flatpickr?.altInput.value || '';
+
+                if (filterType === 'custom') {
+                    if (!startDate || !endDate) {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Silakan pilih tanggal dari dan sampai.',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+                    // Convert dd/mm/yyyy to yyyy-mm-dd for comparison
+                    const startDateObj = startDate.split('/').reverse().join('-');
+                    const endDateObj = endDate.split('/').reverse().join('-');
+                    if (new Date(startDateObj) > new Date(endDateObj)) {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Tanggal sampai tidak boleh sebelum tanggal dari.',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            });
+
+            // Export to Excel
+            function exportToExcel() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const exportUrl = '{{ route('invoices.export') }}?' + urlParams.toString();
+                const exportBtn = event.target.closest('button');
+                const originalContent = exportBtn.innerHTML;
+                exportBtn.innerHTML = `
                 <svg class="w-5 h-5 mr-2 animate-spin" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+                    <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0,0,1 12,4Z"/>
                 </svg>
                 <span class="relative z-10">Mengunduh...</span>
             `;
-            exportBtn.disabled = true;
-
-            // Trigger download
-            window.location.href = exportUrl;
-
-            // Reset button after 3 seconds
-            setTimeout(() => {
-                exportBtn.innerHTML = originalContent;
-                exportBtn.disabled = false;
-            }, 3000);
-        }
-    </script>
+                exportBtn.disabled = true;
+                window.location.href = exportUrl;
+                setTimeout(() => {
+                    exportBtn.innerHTML = originalContent;
+                    exportBtn.disabled = false;
+                }, 3000);
+            }
+        </script>
+    @endpush
 @endsection

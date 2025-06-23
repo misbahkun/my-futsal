@@ -10,8 +10,10 @@
     <title>
         @yield('title')
     </title>
-    <link rel="icon" href="favicon.ico">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link href="{{ asset('style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
 <body x-data="{ page: '@yield('page')', 'isProfileInfoModal': false, 'isProfileAddressModal': false, 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
@@ -49,7 +51,8 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
                 @yield('content')
             </main>
             <!-- ===== Main Content End ===== -->
-            <p class="text-gray-700 dark:text-gray-400 font-semibold mt-10 p-6">&copy; 2025 Politeknik Harapan Bersama - My Futsal Hj Muriyah</p>
+            <p class="text-gray-700 dark:text-gray-400 font-semibold mt-10 p-6">&copy; 2025 Politeknik Harapan Bersama -
+                My Futsal Hj Muriyah</p>
         </div>
         <!-- ===== Content Area End ===== -->
     </div>
