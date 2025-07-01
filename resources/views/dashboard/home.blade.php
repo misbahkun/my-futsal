@@ -84,6 +84,71 @@
                     </div>
                     <!-- Metric Item End -->
                 </div>
+                <!-- Chart Section - Replace the existing chart div in your dashboard/home.blade.php -->
+                <div class="col-span-12 mb-6">
+                    <div
+                        class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                        <!-- Chart Header -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90 mb-2">
+                                    Grafik Statistik Booking
+                                </h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Menampilkan grafik pemesanan untuk setiap lapangan
+                                </p>
+                            </div>
+
+                            <!-- Date Range Controls -->
+                            <div class="flex items-center gap-2 mt-4 sm:mt-0">
+                                <input type="text" id="dateRangePicker" placeholder="Pilih rentang tanggal"
+                                    class="w-64 cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+
+                                <button onclick="updateChart()"
+                                    class="px-4 py-2 bg-gray-500 font-bold text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chart Summary Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="chartSummary">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Booking</p>
+                                <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalSchedules">0</p>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Field Terpopuler</p>
+                                <p class="text-lg font-semibold text-gray-800 dark:text-white" id="popularField">-</p>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Periode</p>
+                                <p class="text-sm font-medium text-gray-800 dark:text-white" id="dateRange">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="relative" style="height: 400px;">
+                            <canvas id="scheduleChart"></canvas>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="chartLoading" class="hidden">
+                            <div class="flex items-center justify-center h-64">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 0 12 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-gray-500 dark:text-gray-400">Memuat data chart...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Metric Group One -->
             </div>
 
@@ -105,7 +170,8 @@
                             <!-- Search Icon -->
                             <div x-show="!loading"
                                 class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
@@ -113,8 +179,8 @@
                             <!-- Loading indicator -->
                             <div x-show="loading" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                                 <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 0 12 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
@@ -234,7 +300,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10"
                                         stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 0 12 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
                                 </svg>
                                 <span class="text-gray-500 text-sm">Mencari...</span>
@@ -279,6 +345,287 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let scheduleChart;
+
+        // Initialize chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- Inisialisasi Flatpickr ---
+            const fp = flatpickr("#dateRangePicker", {
+                mode: "range",
+                dateFormat: "d-m-Y",
+                defaultDate: [new Date().fp_incr(-6), new Date()], // Default 7 hari terakhir
+
+                // Logika untuk membatasi rentang maksimal 7 hari
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 1) {
+                        // Saat tanggal pertama dipilih, batasi tanggal kedua
+                        const startDate = selectedDates[0];
+                        // Batas maksimal adalah 6 hari setelah tanggal mulai (total 7 hari)
+                        const maxEndDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+
+                        // Set maxDate untuk kalender
+                        instance.set('maxDate', maxEndDate);
+                    }
+
+                    // Jika pilihan dibersihkan, hapus batasan maxDate
+                    if (selectedDates.length === 0) {
+                        instance.set('maxDate', null);
+                    }
+                },
+            });
+
+            // --- Inisialisasi Chart ---
+            updateChart();
+        });
+
+        async function loadScheduleChart(startDate = null, endDate = null) {
+            try {
+                document.getElementById('chartLoading').classList.remove('hidden');
+                let url = '{{ route('dashboard.schedule-chart-data') }}';
+                const params = new URLSearchParams();
+                if (startDate) params.append('start', startDate);
+                if (endDate) params.append('end', endDate);
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                updateSummaryCards(data.summary);
+                createScheduleChart(data);
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+                Swal.fire('Error', 'Gagal memuat data chart. Silakan coba lagi.', 'error');
+            } finally {
+                document.getElementById('chartLoading').classList.add('hidden');
+            }
+        }
+
+        function updateSummaryCards(summary) {
+            document.getElementById('totalSchedules').textContent = summary.total_schedules;
+            document.getElementById('popularField').textContent = summary.most_popular_field ?
+                `${summary.most_popular_field.field} (${summary.most_popular_field.total})` : '-';
+            document.getElementById('dateRange').textContent =
+                `${summary.date_range.start} - ${summary.date_range.end}`;
+        }
+
+        function createScheduleChart(data) {
+            const ctx = document.getElementById('scheduleChart').getContext('2d');
+            if (scheduleChart) {
+                scheduleChart.destroy();
+            }
+            scheduleChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: function(context) {
+                                    return `Tanggal Transaksi: ${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    const fieldName = context.dataset.label;
+                                    const bookingCount = context.parsed.y;
+                                    return `${fieldName}: ${bookingCount} booking`;
+                                },
+                                afterBody: function(context) {
+                                    // Hitung total booking pada hari itu
+                                    let total = 0;
+                                    context.forEach(item => {
+                                        total += item.parsed.y;
+                                    });
+                                    if (total > 0) {
+                                        return ['', 'Klik untuk melihat detail booking'];
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        // Gunakan getElementsAtEventForMode untuk mendapatkan semua item pada sumbu X yang sama
+                        const points = scheduleChart.getElementsAtEventForMode(event, 'index', {
+                            intersect: false
+                        }, true);
+
+                        if (points.length > 0) {
+                            const dataIndex = points[0].index;
+                            const dateLabel = scheduleChart.data.labels[dataIndex];
+
+                            // Hitung total booking pada hari itu untuk memastikan ada data sebelum fetch
+                            let totalBookingsOnDay = 0;
+                            scheduleChart.data.datasets.forEach(dataset => {
+                                totalBookingsOnDay += dataset.data[dataIndex] || 0;
+                            });
+
+                            if (totalBookingsOnDay > 0) {
+                                // Panggil fungsi baru dengan label tanggal
+                                showBookingDetailsForDate(dateLabel);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function showBookingDetailsForDate(dateLabel) {
+            Swal.fire({
+                title: 'Memuat Detail...',
+                html: `Mencari data booking untuk tanggal <strong>${dateLabel}</strong>`,
+                allowOutsideClick: false,
+            });
+
+            try {
+                const url = new URL('{{ route('dashboard.booking-details-by-date') }}', window.location.origin);
+                url.searchParams.append('date', dateLabel);
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data dari server.');
+                }
+
+                const details = await response.json();
+
+                if (details.length === 0) {
+                    Swal.fire({
+                        title: 'Tidak Ada Data',
+                        text: `Tidak ditemukan detail booking untuk tanggal ${dateLabel}`,
+                        icon: 'info'
+                    });
+                    return;
+                }
+
+                // Buat konten HTML dari data yang diterima
+                let htmlContent = `<div class="text-left text-sm space-y-4 max-h-64 overflow-y-auto pr-4">`;
+                details.forEach(field => {
+                    htmlContent += `
+                <div>
+                    <h4 class="font-bold text-base text-gray-800 dark:text-white">${field.field_name} (${field.total_bookings} Booking)</h4>
+                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-300 pl-2 mt-1 space-y-1">
+                        ${field.bookings.map(booking => `<li>Jadwal: ${booking.time_slots}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+                });
+                htmlContent += `</div>`;
+
+                // Update SweetAlert dengan konten detail
+                Swal.update({
+                    title: `Detail Booking - ${dateLabel}`,
+                    html: htmlContent,
+                    icon: 'info',
+                    showConfirmButton: true,
+                    showCancelButton: false,
+                    confirmButtonText: 'OK',
+                });
+
+            } catch (error) {
+                console.error('Error fetching booking details:', error);
+                Swal.fire({
+                    title: 'Terjadi Kesalahan',
+                    text: 'Tidak dapat memuat detail booking. Silakan coba lagi.',
+                    icon: 'error'
+                });
+            }
+        }
+
+        function updateChart() {
+            const datePicker = document.querySelector("#dateRangePicker")._flatpickr;
+            const selectedDates = datePicker.selectedDates;
+
+            // Pastikan pengguna telah memilih rentang penuh (tanggal mulai dan selesai)
+            if (selectedDates.length < 2) {
+                Swal.fire({
+                    title: 'Peringatan',
+                    text: 'Silakan pilih rentang tanggal yang lengkap (tanggal mulai dan selesai).',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Ambil tanggal mulai dan selesai dari Flatpickr
+            const startDate = datePicker.formatDate(selectedDates[0], "Y-m-d");
+            const endDate = datePicker.formatDate(selectedDates[1], "Y-m-d");
+
+            // Panggil fungsi untuk memuat data chart
+            loadScheduleChart(startDate, endDate);
+        }
+
+        // Update chart colors when dark mode changes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Watch for dark mode changes and update chart colors
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        if (scheduleChart) {
+                            // Update chart colors for dark mode
+                            const isDark = document.documentElement.classList.contains('dark');
+                            const textColor = isDark ? '#e5e7eb' : '#374151';
+                            const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+                            scheduleChart.options.plugins.legend.labels.color = textColor;
+                            scheduleChart.options.scales.x.title.color = textColor;
+                            scheduleChart.options.scales.x.ticks.color = textColor;
+                            scheduleChart.options.scales.x.grid.color = gridColor;
+                            scheduleChart.options.scales.y.title.color = textColor;
+                            scheduleChart.options.scales.y.ticks.color = textColor;
+                            scheduleChart.options.scales.y.grid.color = gridColor;
+
+                            scheduleChart.update();
+                        }
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        });
+    </script>
+
+
     <script>
         function transactionSearch() {
             return {
@@ -295,7 +642,6 @@
                 },
 
                 init() {
-                    // Initialize with server-side data
                     @if (Auth::user()->role === 'admin')
                         this.transactions = @json($allHistoryTransactions->items());
                         this.pagination = {
@@ -321,7 +667,6 @@
 
                 async searchTransactions(page = 1) {
                     this.loading = true;
-
                     try {
                         const response = await fetch(
                             `{{ route('dashboard.search-transactions') }}?search=${encodeURIComponent(this.searchQuery)}&page=${page}`, {
@@ -331,18 +676,12 @@
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 }
                             });
-
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-
+                        if (!response.ok) throw new Error('Network response was not ok');
                         const data = await response.json();
                         this.transactions = data.data;
                         this.pagination = data.pagination;
-
                     } catch (error) {
                         console.error('Error searching transactions:', error);
-                        // Handle error - maybe show a toast notification
                     } finally {
                         this.loading = false;
                     }
@@ -358,31 +697,21 @@
                     const current = this.pagination.current_page;
                     const last = this.pagination.last_page;
                     const pages = [];
-
                     if (last <= 7) {
-                        for (let i = 1; i <= last; i++) {
-                            pages.push(i);
-                        }
+                        for (let i = 1; i <= last; i++) pages.push(i);
                     } else {
                         if (current <= 3) {
-                            for (let i = 1; i <= 5; i++) {
-                                pages.push(i);
-                            }
+                            for (let i = 1; i <= 5; i++) pages.push(i);
                             pages.push('...', last);
                         } else if (current >= last - 2) {
                             pages.push(1, '...');
-                            for (let i = last - 4; i <= last; i++) {
-                                pages.push(i);
-                            }
+                            for (let i = last - 4; i <= last; i++) pages.push(i);
                         } else {
                             pages.push(1, '...');
-                            for (let i = current - 1; i <= current + 1; i++) {
-                                pages.push(i);
-                            }
+                            for (let i = current - 1; i <= current + 1; i++) pages.push(i);
                             pages.push('...', last);
                         }
                     }
-
                     return pages.filter(page => page !== '...');
                 },
 
@@ -411,7 +740,6 @@
                         'failed': 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
                         'cancelled': 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
                     };
-
                     return classes[status] || 'bg-gray-50 text-gray-600 dark:bg-gray-500/15 dark:text-gray-500';
                 }
             }

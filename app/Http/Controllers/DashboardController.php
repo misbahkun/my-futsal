@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Schedule;
+use App\Models\Field;
 use App\Models\User;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -126,6 +128,306 @@ class DashboardController extends Controller
         }
 
         return $transactions;
+    }
+
+    public function scheduleChartData(Request $request)
+    {
+        try {
+            // Get date range (default to last 7 days)
+            $startDate = $request->input('start') ?
+                Carbon::parse($request->input('start'))->startOfDay() :
+                Carbon::now()->subDays(6)->startOfDay();
+
+            $endDate = $request->input('end') ?
+                Carbon::parse($request->input('end'))->endOfDay() :
+                Carbon::now()->endOfDay();
+
+            // Ensure we don't exceed 7 days
+            if ($startDate->diffInDays($endDate) > 6) {
+                $startDate = $endDate->copy()->subDays(6)->startOfDay();
+            }
+
+            // Log for debugging
+            Log::info('Chart Date Range:', [
+                'start' => $startDate->format('Y-m-d H:i:s'),
+                'end' => $endDate->format('Y-m-d H:i:s')
+            ]);
+
+            // Generate date labels
+            $dates = [];
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $dates[] = $currentDate->format('d M Y');
+                $currentDate->addDay();
+            }
+
+            // Get all fields
+            $fields = Field::orderBy('name')->get();
+
+            // Initialize datasets for each field
+            $datasets = [];
+            $colors = [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40',
+                '#FF6384',
+                '#C9CBCF'
+            ];
+
+            foreach ($fields as $index => $field) {
+                $fieldData = [];
+                $currentDate = $startDate->copy();
+
+                // Get data for each date
+                while ($currentDate->lte($endDate)) {
+                    $dayStart = $currentDate->copy()->startOfDay();
+                    $dayEnd = $currentDate->copy()->endOfDay();
+
+                    // Query berdasarkan tanggal transaksi
+                    $query = Schedule::whereBetween('created_at', [
+                        $dayStart->format('Y-m-d H:i:s'),
+                        $dayEnd->format('Y-m-d H:i:s')
+                    ])
+                        ->where('field_id', $field->id);
+
+                    // Filter by user if not admin
+                    if (Auth::user()->role !== 'admin') {
+                        $query->whereHas('transaction', function ($q) {
+                            $q->where('user_id', Auth::user()->id);
+                        });
+                    }
+
+                    $count = $query->count();
+                    $fieldData[] = $count;
+
+                    $currentDate->addDay(); // Lanjutkan iterasi tanggal
+                }
+
+                $datasets[] = [
+                    'label' => $field->name,
+                    'data' => $fieldData,
+                    'backgroundColor' => $colors[$index % count($colors)] . '80',
+                    'borderColor' => $colors[$index % count($colors)],
+                    'borderWidth' => 2,
+                    'fill' => false,
+                    'tension' => 0.4
+                ];
+            }
+
+            // Calculate totals for summary
+            $totalSchedules = collect($datasets)->sum(function ($dataset) {
+                return array_sum($dataset['data']);
+            });
+
+            // Get most popular field
+            $fieldTotals = collect($datasets)->map(function ($dataset) {
+                return [
+                    'field' => $dataset['label'],
+                    'total' => array_sum($dataset['data'])
+                ];
+            })->sortByDesc('total');
+
+            $mostPopularField = $fieldTotals->first();
+
+            return response()->json([
+                'labels' => $dates,
+                'datasets' => $datasets,
+                'summary' => [
+                    'total_schedules' => $totalSchedules,
+                    'most_popular_field' => $mostPopularField,
+                    'date_range' => [
+                        'start' => $startDate->format('d M Y'),
+                        'end' => $endDate->format('d M Y')
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Chart Data Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to load chart data',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Alternative: Query dengan join ke tabel transaction untuk lebih akurat
+    public function scheduleChartDataWithJoin(Request $request)
+    {
+        try {
+            // Get date range (default to last 7 days)
+            $startDate = $request->input('start') ?
+                Carbon::parse($request->input('start'))->startOfDay() :
+                Carbon::now()->subDays(6)->startOfDay();
+
+            $endDate = $request->input('end') ?
+                Carbon::parse($request->input('end'))->endOfDay() :
+                Carbon::now()->endOfDay();
+
+            // Ensure we don't exceed 7 days
+            if ($startDate->diffInDays($endDate) > 6) {
+                $startDate = $endDate->copy()->subDays(6)->startOfDay();
+            }
+
+            // Generate date labels
+            $dates = [];
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $dates[] = $currentDate->format('d M');
+                $currentDate->addDay();
+            }
+
+            // Get all fields
+            $fields = Field::orderBy('name')->get();
+
+            // Initialize datasets for each field
+            $datasets = [];
+            $colors = [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40',
+                '#FF6384',
+                '#C9CBCF'
+            ];
+
+            foreach ($fields as $index => $field) {
+                $fieldData = [];
+
+                // Get data for each date
+                $currentDate = $startDate->copy();
+                while ($currentDate->lte($endDate)) {
+                    $dayStart = $currentDate->copy()->startOfDay();
+                    $dayEnd = $currentDate->copy()->endOfDay();
+
+                    // Join dengan tabel transaction untuk menggunakan tanggal transaksi
+                    $query = Schedule::join('transactions', 'schedules.transaction_id', '=', 'transactions.id')
+                        ->whereBetween('transactions.created_at', [
+                            $dayStart->format('Y-m-d H:i:s'),
+                            $dayEnd->format('Y-m-d H:i:s')
+                        ])
+                        ->where('schedules.field_id', $field->id);
+
+                    // Filter by user if not admin
+                    if (Auth::user()->role !== 'admin') {
+                        $query->where('transactions.user_id', Auth::user()->id);
+                    }
+
+                    $count = $query->count();
+                    $fieldData[] = $count;
+
+                    $currentDate->addDay();
+                }
+
+                $datasets[] = [
+                    'label' => $field->name,
+                    'data' => $fieldData,
+                    'backgroundColor' => $colors[$index % count($colors)] . '80',
+                    'borderColor' => $colors[$index % count($colors)],
+                    'borderWidth' => 2,
+                    'fill' => false,
+                    'tension' => 0.4
+                ];
+            }
+
+            // Calculate totals for summary
+            $totalSchedules = collect($datasets)->sum(function ($dataset) {
+                return array_sum($dataset['data']);
+            });
+
+            // Get most popular field
+            $fieldTotals = collect($datasets)->map(function ($dataset) {
+                return [
+                    'field' => $dataset['label'],
+                    'total' => array_sum($dataset['data'])
+                ];
+            })->sortByDesc('total');
+
+            $mostPopularField = $fieldTotals->first();
+
+            return response()->json([
+                'labels' => $dates,
+                'datasets' => $datasets,
+                'summary' => [
+                    'total_schedules' => $totalSchedules,
+                    'most_popular_field' => $mostPopularField,
+                    'date_range' => [
+                        'start' => $startDate->format('d M Y'),
+                        'end' => $endDate->format('d M Y')
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Chart Data Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to load chart data',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBookingDetailsForDate(Request $request)
+    {
+        // Validasi input tanggal
+        $request->validate([
+            'date' => 'required|date_format:d M Y',
+        ]);
+
+        try {
+            // Parse tanggal dari format 'd M Y' (contoh: 02 Jul 2025) ke objek Carbon
+            $parsedDate = Carbon::createFromFormat('d M Y', $request->input('date'))->startOfDay();
+
+            // Query untuk mengambil jadwal pada tanggal tersebut
+            $query = Schedule::with('field')
+                ->whereDate('created_at', $parsedDate);
+
+            // Filter berdasarkan user jika bukan admin
+            if (Auth::user()->role !== 'admin') {
+                $query->whereHas('transaction', function ($q) {
+                    $q->where('user_id', Auth::id());
+                });
+            }
+
+            $schedules = $query->orderBy('field_id')->get();
+
+            // Jika tidak ada jadwal, kembalikan array kosong
+            if ($schedules->isEmpty()) {
+                return response()->json([]);
+            }
+
+            // Kelompokkan hasil berdasarkan nama lapangan
+            $groupedByField = $schedules->groupBy('field.name');
+
+            // Format data untuk respons JSON
+            $details = $groupedByField->map(function ($schedulesInField, $fieldName) {
+                return [
+                    'field_name' => $fieldName,
+                    'bookings' => $schedulesInField->map(function ($schedule) {
+                        return [
+                            'time_slots' => $schedule->time_slots,
+                        ];
+                    }),
+                    'total_bookings' => $schedulesInField->count()
+                ];
+            })->values(); // ->values() untuk mereset key menjadi array 0, 1, 2, ...
+
+            return response()->json($details);
+        } catch (\Exception $e) {
+            Log::error('Error fetching booking details by date: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengambil data detail.'], 500);
+        }
     }
 
     private function addDateSearch($query, $search)

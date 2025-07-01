@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function () {
         // Add search route for transactions
         Route::get('/search-transactions', [DashboardController::class, 'searchTransactions'])->name('dashboard.search-transactions');
         Route::get('/transactions/search', [TransactionController::class, 'search'])->name('admin.transactions.search');
+        Route::get('/schedule-chart-data', [DashboardController::class, 'scheduleChartData'])->name('dashboard.schedule-chart-data');
+        Route::get('/booking-details-by-date', [DashboardController::class, 'getBookingDetailsForDate'])->name('dashboard.booking-details-by-date');
 
         Route::get('/users', [UsersController::class, 'index'])->name('admin.users');
         Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');

@@ -48,7 +48,7 @@
 
                     <!-- Reset Filter -->
                     @if (request()->hasAny(['filter_type', 'payment_status', 'amount_range', 'start_date', 'end_date']))
-                        <a href="{{ route('user.invoices') }}"
+                        <a href="{{ route('admin.transactions') }}"
                             class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 inline-flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -639,40 +639,6 @@
                 const startPicker = document.getElementById('start_date')._flatpickr;
                 if (selectedDates[0]) {
                     startPicker.set('maxDate', selectedDates[0]);
-                }
-            }
-        });
-
-        // Form validation
-        document.querySelector('#formFilter').addEventListener('submit', function(e) {
-            const filterType = document.querySelector('input[name="filter_type"]:checked').value;
-            const startDate = document.getElementById('start_date')._flatpickr?.altInput.value || '';
-            const endDate = document.getElementById('end_date')._flatpickr?.altInput.value || '';
-
-            if (filterType === 'custom') {
-                if (!startDate || !endDate) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Silakan pilih tanggal dari dan sampai.',
-                        icon: 'error',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-                // Convert dd/mm/yyyy to yyyy-mm-dd for comparison
-                const startDateObj = startDate.split('/').reverse().join('-');
-                const endDateObj = endDate.split('/').reverse().join('-');
-                if (new Date(startDateObj) > new Date(endDateObj)) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Tanggal sampai tidak boleh sebelum tanggal dari.',
-                        icon: 'error',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
                 }
             }
         });
