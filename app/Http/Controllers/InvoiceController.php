@@ -73,9 +73,10 @@ public function index(Request $request)
 
             $invoices = $query->orderBy('created_at', 'desc')->paginate(10);
 
+            $totalAmount = $query->sum('amount');
             $totalCount = $query->count();
 
-            return view('dashboard.invoices.index', compact('invoices', 'totalCount'));
+            return view('dashboard.invoices.index', compact('invoices', 'totalCount', 'totalAmount'));
         } catch (\Exception $e) {
             Log::error("Error retrieving invoices: " . $e->getMessage());
             return redirect()->route('homeDashboard')

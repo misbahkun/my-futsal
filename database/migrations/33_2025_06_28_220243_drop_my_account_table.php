@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
-        });
+        Schema::dropIfExists('my_account');
     }
 
     /**
@@ -21,8 +19,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
-            $table->string('payment_method')->nullable()->after('status');
+        Schema::create('my_account', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
         });
     }
 };

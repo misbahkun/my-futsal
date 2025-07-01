@@ -153,6 +153,7 @@ class BookingController extends Controller
         'user_id' => $user->id,
         'status' => 'unpaid',
         'amount' => 0,
+        'payment_type' => 'online',
         'midtrans_order_id' => 'ORDER-' . time() . '-' . rand(1, 100),
       ]);
       Log::info('Created transaction with midtrans_order_id: ' . $transaction->midtrans_order_id);

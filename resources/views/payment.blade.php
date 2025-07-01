@@ -440,11 +440,10 @@
                     onSuccess: function(result) {
                         console.log('Payment success:', result);
                         Alpine.store('cart').clearCart();
-                        window.location.href = '{{ route('home') }}';
+                        window.location.href = '{{ route('homeDashboard') }}';
                     },
                     onPending: function(result) {
                         console.log('Payment pending:', result);
-                        window.location.href = '{{ route('home') }}';
                     },
                     onError: function(result) {
                         console.log('Payment error:', result);

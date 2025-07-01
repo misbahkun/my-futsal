@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             $table->string('midtrans_order_id')->nullable()->after('id');
-            $table->string('midtrans_status')->nullable()->after('status');
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn(['midtrans_order_id', 'midtrans_status']);
+            $table->dropColumn('midtrans_order_id');
         });
     }
 };

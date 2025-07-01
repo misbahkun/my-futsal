@@ -11,8 +11,8 @@ class Transaction extends Model
         'status',
         'amount',
         'midtrans_order_id',
-        'midtrans_status',
-        'payment_type'
+        'payment_type',
+        'payment_method'
     ];
 
     public function schedules()

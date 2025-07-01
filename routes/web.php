@@ -66,7 +66,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/book', [BookingController::class, 'book'])->name('book');
     // Midtrans callback routes
-    Route::post('/payment/midtrans-callback', [PaymentController::class, 'handleMidtransCallback'])->name('midtrans.callback');
     Route::get('/payment/retry/{transactionId}', [PaymentController::class, 'retryPayment'])->name('payment.retry');
 
     // Invoice routes
@@ -75,6 +74,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoice/{transactionId}', [InvoiceController::class, 'showInvoice'])->name('invoice');
     Route::get('/invoice/{transactionId}/pdf', [InvoiceController::class, 'generateInvoicePdf'])->name('generate.invoice.pdf');
 });
+
+// notification from midtrans
+Route::post('/payment/midtrans-callback', [PaymentController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
 // Booking and payment routes
 Route::post('/checkout/payment', [BookingController::class, 'checkout'])->name('checkoutPayment');

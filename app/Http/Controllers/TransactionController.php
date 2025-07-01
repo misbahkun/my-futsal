@@ -72,11 +72,7 @@ class TransactionController extends Controller
 
             $transactions = $query->orderBy('created_at', 'desc')->paginate(10);
 
-            // Calculate summary statistics
-            $totalAmount = $query->sum('amount');
-            $totalCount = $query->count();
-
-            return view('dashboard.transactions.index', compact('transactions', 'totalAmount', 'totalCount'));
+            return view('dashboard.transactions.index', compact('transactions'));
         } catch (\Exception $e) {
             Log::error("Error retrieving transactions: " . $e->getMessage());
             return redirect()->route('homeDashboard')->with('error', 'Terjadi kesalahan saat memuat daftar transaksi: ' . $e->getMessage());
@@ -364,7 +360,7 @@ class TransactionController extends Controller
             return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
         }
 
-        $transaction = Transaction::with(['user', 'schedule'])->findOrFail($id);
+        $transaction = Transaction::with(['user', 'schedules'])->findOrFail($id);
         return view('dashboard.transactions.show', compact('transaction'));
     }
 
@@ -383,8 +379,7 @@ class TransactionController extends Controller
 
         $transaction = Transaction::findOrFail($id);
         $users = User::all();
-        $banks = MyAccount::select('name')->get();
-        return view('dashboard.transactions.edit', compact('transaction', 'users', 'banks'));
+        return view('dashboard.transactions.edit', compact('transaction', 'users'));
     }
 
     /**
@@ -405,7 +400,7 @@ class TransactionController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:0',
-            'payment_type' => 'required|in:online,on_site',
+            'payment_type' => 'required',
             'payment_method' => 'required|string',
             'status' => 'required|in:unpaid,pending_verification,paid,cancelled',
             'payment_proof' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',

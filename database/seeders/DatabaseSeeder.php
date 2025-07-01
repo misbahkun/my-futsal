@@ -8,7 +8,6 @@ use App\Models\Sports;
 use App\Models\Venue;
 use App\Models\Field;
 use App\Models\Gallery;
-use App\Models\MyAccount;
 use App\Models\VenueSports;
 use Illuminate\Support\Str;
 
@@ -28,22 +27,6 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Admin User',
             'phone_number' => '081234567890',
             'email_verified_at' => now(),
-        ]);
-
-        MyAccount::create([
-            'name' => 'BCA',
-            'account_name' => 'Hj. Muriyah',
-            'account_number' => '1234567890',
-            'type' => 'Bank Account',
-            'image' => 'bca-bank-central-asia.svg'
-        ]);
-        
-        MyAccount::create([
-            'name' => 'MANDIRI',
-            'account_name' => 'Hj. Muriyah',
-            'account_number' => '91293123',
-            'type' => 'Bank Account',
-            'image' => 'bank-mandiri.svg'
         ]);
 
         // Seed sports
