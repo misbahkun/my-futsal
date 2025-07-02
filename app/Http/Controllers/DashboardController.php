@@ -147,11 +147,34 @@ class DashboardController extends Controller
                 $startDate = $endDate->copy()->subDays(6)->startOfDay();
             }
 
-            // Log for debugging
-            Log::info('Chart Date Range:', [
-                'start' => $startDate->format('Y-m-d H:i:s'),
-                'end' => $endDate->format('Y-m-d H:i:s')
-            ]);
+            // Query semua jadwal dalam rentang tanggal yang dipilih
+            $schedulesInDateRangeQuery = Schedule::whereBetween('created_at', [$startDate, $endDate]);
+
+            // Filter berdasarkan user jika bukan admin
+            if (Auth::user()->role !== 'admin') {
+                $schedulesInDateRangeQuery->whereHas('transaction', function ($q) {
+                    $q->where('user_id', Auth::id());
+                });
+            }
+
+            $schedulesInDateRange = $schedulesInDateRangeQuery->get();
+
+            // Hitung frekuensi setiap time_slots
+            $timeSlotsFrequency = $schedulesInDateRange
+                ->pluck('time_slots')
+                ->countBy(); // Menghasilkan koleksi seperti ['08:00 - 09:00' => 5, '09:00 - 10:00' => 3]
+
+            // Temukan time_slots dengan frekuensi tertinggi
+            $mostPopularTimeSlot = $timeSlotsFrequency->sortDesc()->keys()->first();
+            $mostPopularTimeSlotCount = $timeSlotsFrequency->sortDesc()->first();
+
+            $popularTimeSlotData = null;
+            if ($mostPopularTimeSlot) {
+                $popularTimeSlotData = [
+                    'time_slot' => $mostPopularTimeSlot,
+                    'total' => $mostPopularTimeSlotCount,
+                ];
+            }
 
             // Generate date labels
             $dates = [];
@@ -238,6 +261,7 @@ class DashboardController extends Controller
                 'summary' => [
                     'total_schedules' => $totalSchedules,
                     'most_popular_field' => $mostPopularField,
+                    'most_popular_time_slot' => $popularTimeSlotData,
                     'date_range' => [
                         'start' => $startDate->format('d M Y'),
                         'end' => $endDate->format('d M Y')

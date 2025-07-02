@@ -113,15 +113,19 @@
 
                         <!-- Chart Summary Cards -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="chartSummary">
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Total Booking</p>
                                 <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalSchedules">0</p>
                             </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Field Terpopuler</p>
+                            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Lapangan Terpopuler</p>
                                 <p class="text-lg font-semibold text-gray-800 dark:text-white" id="popularField">-</p>
                             </div>
-                            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Waktu Booking Terpopuler</p>
+                                <p class="text-lg font-semibold text-gray-800 dark:text-white" id="popularTime">-</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Periode</p>
                                 <p class="text-sm font-medium text-gray-800 dark:text-white" id="dateRange">-</p>
                             </div>
@@ -413,8 +417,13 @@
 
         function updateSummaryCards(summary) {
             document.getElementById('totalSchedules').textContent = summary.total_schedules;
+
             document.getElementById('popularField').textContent = summary.most_popular_field ?
-                `${summary.most_popular_field.field} (${summary.most_popular_field.total})` : '-';
+                `${summary.most_popular_field.field} (${summary.most_popular_field.total}x)` : '-';
+
+            document.getElementById('popularTime').textContent = summary.most_popular_time_slot ?
+                `${summary.most_popular_time_slot.time_slot} (${summary.most_popular_time_slot.total}x)` : '-';
+
             document.getElementById('dateRange').textContent =
                 `${summary.date_range.start} - ${summary.date_range.end}`;
         }
