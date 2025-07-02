@@ -4,355 +4,101 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Schedule;
-use App\Models\MyAccount;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
+use Midtrans\Notification;
+use Midtrans\Config;
 
 class PaymentController extends Controller
 {
-    /**
-     * Show payment details and bank account for pending payment
-     */
-    public function showPaymentPending($transactionId)
+    public function handleMidtransCallback(Request $request)
     {
         try {
-            $this->cancelExpiredTransactions();
+            Config::$serverKey = config('midtrans.server_key');
+            Config::$clientKey = config('midtrans.client_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized = config('midtrans.is_sanitized');
+            Config::$is3ds = config('midtrans.is_3ds');
+
+            // Log the raw request to debug
+            Log::info('Midtrans Callback Raw Request:', $request->all());
+
+            // Initialize Midtrans Notification
+            $notif = new Notification();
+
+            // Log notification data
+            Log::info('Midtrans Notification Data:', [
+                'order_id' => $notif->order_id,
+                'transaction_status' => $notif->transaction_status,
+                'payment_type' => $notif->payment_type,
+                'fraud_status' => $notif->fraud_status,
+                'notif' => $notif
+            ]);
 
             // Find the transaction
-            $transaction = Transaction::with('user')
-                ->findOrFail($transactionId);
+            $transaction = Transaction::where('midtrans_order_id', $notif->order_id)->firstOrFail();
 
-            // Make sure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
+            $status = $notif->transaction_status;
+            $type = $notif->payment_type;
+            $fraud = $notif->fraud_status;
 
-            // If transaction is no longer 'unpaid' or 'pending_verification', redirect appropriately
-            if ($transaction->status !== 'unpaid' && $transaction->status !== 'pending_verification') {
-                if ($transaction->status === 'cancelled') {
-                    return redirect()->route('home')
-                        ->with('error', 'Transaksi ini telah dibatalkan karena melewati batas waktu pembayaran.');
-                } elseif ($transaction->status === 'paid') {
-                    return redirect()->route('invoice', ['transactionId' => $transaction->id])
-                        ->with('success-payment', 'Pembayaran Anda telah diterima.');
-                }
-            }
+            $vaNumbers = $request->input('va_numbers', []);
+            $vaBank = !empty($vaNumbers) ? $vaNumbers[0]['bank'] : 'unknown';
 
-            // Calculate remaining time for payment (15 minutes)
-            $createdAt = Carbon::parse($transaction->created_at);
-            $deadline = $createdAt->copy()->addMinutes(15);
-            $now = Carbon::now();
+            if ($status == 'capture') {
+                if ($fraud == 'accept') {
+                    $transaction->update([
+                        'status' => 'paid',                        
+                        'payment_type' => $type
+                    ]);
 
-            // If expired and status still unpaid, cancel the transaction and redirect
-            if ($now->gt($deadline) && $transaction->status === 'unpaid') {
-                $this->cancelTransaction($transaction);
-
-                return redirect()->route('home')
-                    ->with('info-cancelled', 'Transaksi ini telah dibatalkan karena melewati batas waktu pembayaran (15 menit).');
-            }
-
-            // Format deadline for JavaScript
-            $deadline = $deadline->toIso8601String();
-
-            // Get bank account information based on payment method
-            $bank = MyAccount::where('name', $transaction->payment_method)
-                ->orWhere('name', 'like', '%' . $transaction->payment_method . '%')
-                ->first();
-
-            // Get scheduled items from database
-            $schedules = Schedule::where('transaction_id', $transaction->id)
-                ->with('field.venue')
-                ->get();
-
-            $items = [];
-            $discountPercentage = 0;
-            $totalOriginalPrice = 0;
-
-            // Check if user is eligible for discount
-            $hasDiscount = Auth::check() && Auth::user()->role !== 'non_member';
-            $discountPercentage = $hasDiscount ? 10 : 0;
-
-            if ($schedules->count() > 0) {
-                foreach ($schedules as $schedule) {
-                    $itemPrice = $schedule->price;
-
-                    // Calculate original price if discount is applicable
-                    $originalPrice = $hasDiscount ? round($itemPrice / 0.9) : $itemPrice;
-
-                    $itemDetails = [
-                        'field' => $schedule->field->name,
-                        'venue' => $schedule->field->venue->name,
-                        'date' => Carbon::parse($schedule->date)->format('d M Y') . ' ' . $schedule->time_slots,
-                        'price' => $itemPrice,
-                        'originalPrice' => $hasDiscount ? $originalPrice : null
-                    ];
-
-                    $items[] = $itemDetails;
-
-                    // Accumulate original total price for discount calculation
-                    if ($hasDiscount) {
-                        $totalOriginalPrice += $originalPrice;
+                    if ($vaBank != 'unknown') {
+                        $transaction->update([
+                            'payment_method' => "va " . $vaBank
+                        ]);
                     }
                 }
-            }
-
-            return view('payment-pending', compact(
-                'transaction',
-                'bank',
-                'deadline',
-                'items',
-                'hasDiscount',
-                'discountPercentage',
-                'totalOriginalPrice'
-            ));
-        } catch (\Exception $e) {
-            Log::error("Error in showPaymentPending: " . $e->getMessage());
-            return redirect()->route('home')
-                ->with('error', 'Terjadi kesalahan saat memuat halaman pembayaran: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Upload payment proof
-     */
-    public function uploadPaymentProof(Request $request, $transactionId)
-    {
-        try {
-            // Validate the request
-            $request->validate([
-                'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:5120', // 5MB max - ganti di php.ini
-            ]);
-
-            Log::info(['file' => $request->file('payment_proof')]);
-
-            // Find the transaction
-            $transaction = Transaction::findOrFail($transactionId);
-
-            // Ensure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
-
-            // Check if transaction is in a status that allows uploading
-            // Allow both 'unpaid' and 'pending_verification' status
-            if ($transaction->status !== 'unpaid' && $transaction->status !== 'pending_verification') {
-                return redirect()->back()
-                    ->with('error', 'Status transaksi ini tidak memungkinkan upload bukti pembayaran.');
-            }
-
-            // Handle file upload
-            if ($request->hasFile('payment_proof')) {
-                // Delete previous payment proof if exists
-                if ($transaction->payment_proof) {
-                    Storage::disk('public')->delete($transaction->payment_proof);
-                }
-
-                // Store the new file
-                $path = $request->file('payment_proof')->store('payment_proofs', 'public');
-
-                // Update transaction with proof and change status to pending_verification
+            } elseif ($status == 'settlement') {
                 $transaction->update([
-                    'payment_proof' => $path,
-                    'status' => 'pending_verification'
+                    'status' => 'paid',                    
+                    'payment_type' => $type
                 ]);
 
-                return redirect()->route('payment.pending', $transaction->id)
-                    ->with('success', $transaction->payment_proof ? 'Bukti pembayaran berhasil diperbarui.' : 'Bukti pembayaran berhasil diunggah.')
-                    ->with('info', 'Pembayaran Anda sedang diverifikasi oleh admin.');
+                if ($vaBank != 'unknown') {
+                    $transaction->update([
+                        'payment_method' => "va " . $vaBank
+                    ]);
+                }
+            } elseif ($status == 'pending') {
+                $transaction->update([
+                    'status' => 'unpaid',
+                    'payment_type' => $type
+                ]);
+                if ($vaBank != 'unknown') {
+                    $transaction->update([
+                        'payment_method' => "va " . $vaBank
+                    ]);
+                }
+            } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
+                $transaction->update([
+                    'status' => 'cancelled',
+                    'payment_type' => $type
+                ]);
+                if ($vaBank != 'unknown') {
+                    $transaction->update([
+                        'payment_method' => "va " . $vaBank
+                    ]);
+                }
+                Schedule::where('transaction_id', $transaction->id)->delete();
+                Log::info("Schedule cancelled {$transaction->id}");
+            } else {
+                Log::warning("Unhandled transaction status: {$status} for order_id: {$notif->order_id}");
             }
-
-            return redirect()->back()
-                ->with('error', 'Gagal mengunggah bukti pembayaran.');
+            Log::info("Midtrans callback processed for order_id: {$notif->order_id}, status: {$status}");
+            return response()->json(['status' => 'success'], 200);
         } catch (\Exception $e) {
-            Log::error("Error in uploadPaymentProof: " . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat mengunggah bukti pembayaran: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Check and cancel all expired transactions (unpaid after 15 minutes)
-     */
-    public function cancelExpiredTransactions()
-    {
-        try {
-            $expiredTransactions = Transaction::where('status', 'unpaid')
-                ->where('created_at', '<', now()->subMinutes(15))
-                ->get();
-
-            $count = 0;
-            foreach ($expiredTransactions as $transaction) {
-                $this->cancelTransaction($transaction);
-                $count++;
-            }
-
-            if ($count > 0) {
-                Log::info("Cancelled {$count} expired transactions");
-            }
-
-            return $count;
-        } catch (\Exception $e) {
-            Log::error("Error cancelling expired transactions: " . $e->getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Cancel a specific transaction and delete it
-     */
-    private function cancelTransaction($transaction)
-    {
-        try {
-            Schedule::where('transaction_id', $transaction->id)->delete();
-
-            $transaction->update([
-                'status' => 'cancelled'
-            ]);
-
-            Log::info("Transaction #{$transaction->id} deleted");
-            return true;
-        } catch (\Exception $e) {
-            Log::error("Error deleting transaction #{$transaction->id}: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Check payment status - can be called manually by user
-     */
-    public function checkPaymentStatus($transactionId)
-    {
-        try {
-            $this->cancelExpiredTransactions();
-
-            $transaction = Transaction::findOrFail($transactionId);
-
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
-
-            if ($transaction->status === 'cancelled') {
-                return redirect()->route('home')
-                    ->with('error', 'Transaksi ini telah dibatalkan.');
-            } elseif ($transaction->status === 'paid') {
-                return redirect()->route('invoice', $transaction->id)
-                    ->with('success-payment', 'Pembayaran Anda telah diterima. Berikut adalah invoice Anda.');
-            } elseif ($transaction->status === 'pending_verification') {
-                return redirect()->back()
-                    ->with('info-wait-verification', 'Bukti pembayaran Anda sedang diverifikasi oleh admin. Silakan tunggu.');
-            }
-
-            return redirect()->back()
-                ->with('info-wait-verification', 'Pembayaran belum terverifikasi. Silakan upload bukti transfer.');
-        } catch (\Exception $e) {
-            Log::error("Error in checkPaymentStatus: " . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat memeriksa status pembayaran: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Manual cancellation by user
-     */
-    public function cancelTransactionManually($transactionId)
-    {
-        try {
-            // Find the transaction
-            $transaction = Transaction::findOrFail($transactionId);
-
-            // Ensure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
-
-            // Cancel the transaction
-            $this->cancelTransaction($transaction);
-
-            return redirect()->route('home')
-                ->with('success', 'Transaksi berhasil dibatalkan.');
-        } catch (\Exception $e) {
-            Log::error("Error in cancelTransactionManually: " . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat membatalkan transaksi: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Show form to change payment method
-     */
-    public function changePaymentMethod($transactionId)
-    {
-        try {
-            // Find the transaction
-            $transaction = Transaction::findOrFail($transactionId);
-
-            // Ensure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
-
-            // Check if payment proof already uploaded
-            if ($transaction->payment_proof || $transaction->status === 'pending_verification') {
-                return redirect()->route('payment.pending', $transaction->id)
-                    ->with('error', 'Anda tidak dapat mengubah metode pembayaran setelah mengunggah bukti transfer.');
-            }
-
-            // Get available payment methods
-            $banks = MyAccount::select('name', 'account_name', 'type', 'image')->get();
-
-            return view('change-payment-method', compact('transaction', 'banks'));
-        } catch (\Exception $e) {
-            Log::error("Error in changePaymentMethod: " . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat memuat halaman');
-        }
-    }
-
-    /**
-     * Process payment method change
-     */
-    public function updatePaymentMethod(Request $request, $transactionId)
-    {
-        try {
-            // Validate input
-            $request->validate([
-                'payment_method' => 'required|string'
-            ]);
-
-            // Find the transaction
-            $transaction = Transaction::findOrFail($transactionId);
-
-            // Ensure the transaction belongs to the current user
-            if ($transaction->user_id !== Auth::id()) {
-                return redirect()->route('home')
-                    ->with('error', 'Anda tidak memiliki akses ke transaksi ini.');
-            }
-
-            // Check if payment proof already uploaded
-            if ($transaction->payment_proof || $transaction->status === 'pending_verification') {
-                return redirect()->route('payment.pending', $transaction->id)
-                    ->with('error', 'Anda tidak dapat mengubah metode pembayaran setelah mengunggah bukti transfer.');
-            }
-
-            // Update payment method
-            $transaction->update([
-                'payment_method' => $request->payment_method
-            ]);
-
-            return redirect()->route('payment.pending', $transaction->id)
-                ->with('success', 'Metode pembayaran berhasil diubah.');
-        } catch (\Exception $e) {
-            Log::error("Error in updatePaymentMethod: " . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat mengubah metode pembayaran: ' . $e->getMessage());
+            Log::error("Midtrans callback error: " . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 }

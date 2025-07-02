@@ -172,7 +172,6 @@
                                 field: '{{ $field->name }}',
                                 date: `${nextDate} ${timeSlot}`,
                                 price: calculateTimePrice(timeSlot),
-                                payment_method: 'online',
                                 status: status[nextDate + ' ' + timeSlot]
                             })"
                                 class="border border-black rounded-lg p-4 flex flex-col"

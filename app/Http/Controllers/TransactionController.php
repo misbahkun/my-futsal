@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\MyAccount;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
@@ -19,18 +21,62 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        // Check if user is admin
-        if (Auth::user()->role !== 'admin') {
-            return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
+        try {
+            // Check if user is admin
+            if (Auth::user()->role !== 'admin') {
+                return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
+            }
+
+            $query = Transaction::with('user');
+
+            if ($request->filled('start_date') && $request->filled('end_date') && $request->filter_type === 'custom') {
+                $startDate = Carbon::parse($request->start_date)->startOfDay();
+                $endDate = Carbon::parse($request->end_date)->endOfDay();
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            } elseif ($request->filled('filter_type')) {
+                $now = Carbon::now();
+                switch ($request->filter_type) {
+                    case 'day':
+                        $query->whereDate('created_at', $now->toDateString());
+                        break;
+                    case 'week':
+                        $startOfWeek = $now->startOfWeek();
+                        $endOfWeek = $now->copy()->endOfWeek();
+                        $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                        break;
+                    case 'month':
+                        $query->whereYear('created_at', $now->year)
+                            ->whereMonth('created_at', $now->month);
+                        break;
+                    case 'year':
+                        $query->whereYear('created_at', $now->year);
+                        break;
+                }
+            }
+
+            if ($request->filled('amount_range')) {
+                $range = explode('-', $request->amount_range);
+                if (count($range) == 2) {
+                    $minAmount = (int)$range[0];
+                    $maxAmount = (int)$range[1];
+                    $query->whereBetween('amount', [$minAmount, $maxAmount]);
+                }
+            }
+
+            if ($request->filled('min_amount')) {
+                $query->where('amount', '>=', $request->min_amount);
+            }
+            if ($request->filled('max_amount')) {
+                $query->where('amount', '<=', $request->max_amount);
+            }
+
+            $transactions = $query->orderBy('created_at', 'desc')->paginate(10);
+
+            return view('dashboard.transactions.index', compact('transactions'));
+        } catch (\Exception $e) {
+            Log::error("Error retrieving transactions: " . $e->getMessage());
+            return redirect()->route('homeDashboard')->with('error', 'Terjadi kesalahan saat memuat daftar transaksi: ' . $e->getMessage());
         }
-
-        $banks = MyAccount::select('name')->get();
-        $users = User::all();
-
-        // Handle initial load or non-AJAX requests
-        $transactions = Transaction::with('user')->latest()->paginate(10);
-
-        return view('dashboard.transactions.index', compact('transactions', 'users', 'banks'));
     }
 
     /**
@@ -314,7 +360,7 @@ class TransactionController extends Controller
             return redirect()->route('homeDashboard')->with('error', 'You do not have permission to access this page.');
         }
 
-        $transaction = Transaction::with(['user', 'schedule'])->findOrFail($id);
+        $transaction = Transaction::with(['user', 'schedules'])->findOrFail($id);
         return view('dashboard.transactions.show', compact('transaction'));
     }
 
@@ -333,8 +379,7 @@ class TransactionController extends Controller
 
         $transaction = Transaction::findOrFail($id);
         $users = User::all();
-        $banks = MyAccount::select('name')->get();
-        return view('dashboard.transactions.edit', compact('transaction', 'users', 'banks'));
+        return view('dashboard.transactions.edit', compact('transaction', 'users'));
     }
 
     /**
@@ -355,7 +400,7 @@ class TransactionController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:0',
-            'payment_type' => 'required|in:online,on_site',
+            'payment_type' => 'required',
             'payment_method' => 'required|string',
             'status' => 'required|in:unpaid,pending_verification,paid,cancelled',
             'payment_proof' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',

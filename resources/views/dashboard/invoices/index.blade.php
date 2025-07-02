@@ -136,7 +136,7 @@
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Invoice</p>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Transaksi</p>
                                 <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($totalCount) }}
                                 </p>
                             </div>

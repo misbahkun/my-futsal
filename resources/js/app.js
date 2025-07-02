@@ -4,7 +4,7 @@ import Alpine from 'alpinejs';
 import Swal from 'sweetalert2';
 
 window.Swal = Swal;
-window.Alpine = Alpine
+window.Alpine = Alpine;
 
 Alpine.store('cart', {
     items: JSON.parse(localStorage.getItem('cart')) || [],
@@ -16,7 +16,7 @@ Alpine.store('cart', {
                 icon: 'info',
                 title: 'Slot sudah terisi',
                 text: 'Silakan pilih slot lain.',
-            })
+            });
             return;
         }
 
@@ -32,7 +32,7 @@ Alpine.store('cart', {
             // Add the item to the cart
             // Add original price to the data object
             const userRole = window.user_role;
-            console.log(userRole)
+            console.log(userRole);
 
             if (userRole === 'member' || userRole === 'admin') {
                 data.originalPrice = this.calculateOriginalPrice(data.price);
@@ -99,10 +99,10 @@ Alpine.store('menu', {
     auth: false,
 
     handleOpen() {
-        this.open = !this.open
+        this.open = !this.open;
     },
     handleAuthClick() {
-        this.auth = !this.auth
+        this.auth = !this.auth;
     }
 });
 
@@ -125,64 +125,23 @@ Alpine.store('payment', {
     },
 
     isIndonesianEmail(email) {
-        // Basic email validation
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return false;
         }
-
-        // Get the domain part
         const domain = email.split('@')[1].toLowerCase();
-
-        // Check for Indonesian TLD (.id, .co.id, .ac.id, etc.)
         if (domain.endsWith('.id')) return true;
-
-        // List of common Indonesian email providers or universities
-        const indonesianDomains = [
-            'gmail.com',        // Common internationally, but widely used in Indonesia
-            'yahoo.com',        // Common internationally, but widely used in Indonesia
-            'yahoo.co.id',      // Indonesian Yahoo domain
-            'telkom.net.id',    // Telkom Indonesia
-            'telkomsel.co.id',  // Telkomsel
-            // Add other Indonesian email domains as needed
-        ];
-
+        const indonesianDomains = ['gmail.com', 'yahoo.com', 'yahoo.co.id', 'telkom.net.id', 'telkomsel.co.id'];
         return indonesianDomains.includes(domain);
     },
 
     showVerificationSelector() {
-        // Check if payment method is selected
-        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
-        let isMethodSelected = false;
-
-        for (let i = 0; i < paymentMethods.length; i++) {
-            if (paymentMethods[i].checked) {
-                isMethodSelected = true;
-                break;
-            }
-        }
-
-        if (!isMethodSelected) {
-            // Show SweetAlert for payment method validation
-            Swal.fire({
-                title: 'Metode Pembayaran Diperlukan',
-                text: 'Silakan pilih metode pembayaran terlebih dahulu',
-                icon: 'warning',
-                confirmButtonColor: '#DC2626',
-                confirmButtonText: 'OK'
-            });
-
-            return;
-        }
-
         const phoneInput = document.getElementById('phone_number');
         this.currentPhoneNumber = phoneInput ? phoneInput.value.trim() : '';
 
         const emailInput = document.getElementById('email');
         this.currentEmail = emailInput ? emailInput.value.trim() : '';
 
-        // Indonesian phone number validation
         const indonesianPhoneRegex = /^((\+?62|62|0)8[1-9][0-9]{6,10})$/;
-
         if (!indonesianPhoneRegex.test(this.currentPhoneNumber)) {
             Swal.fire({
                 title: 'Nomor Telepon Tidak Valid',
@@ -191,12 +150,10 @@ Alpine.store('payment', {
                 confirmButtonColor: '#DC2626',
                 confirmButtonText: 'OK'
             });
-
             if (phoneInput) phoneInput.focus();
             return;
         }
 
-        // Basic email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(this.currentEmail)) {
             Swal.fire({
@@ -206,7 +163,6 @@ Alpine.store('payment', {
                 confirmButtonColor: '#DC2626',
                 confirmButtonText: 'OK'
             });
-
             if (emailInput) emailInput.focus();
             return;
         }
@@ -219,13 +175,13 @@ Alpine.store('payment', {
                 confirmButtonColor: '#DC2626',
                 confirmButtonText: 'OK'
             });
-
             if (emailInput) emailInput.focus();
             return;
         }
 
         if (this.checkForm()) {
             if (window.isLoggedIn) {
+                // For logged-in users, submit the form directly
                 document.getElementById('paymentForm').submit();
             } else {
                 this.showVerificationMethodModal = true;
@@ -239,22 +195,14 @@ Alpine.store('payment', {
         this.selectedMethod = method;
         this.verificationCodeDigits = ['', '', '', '', '', ''];
 
-        // Get CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-        // Prepare data based on verification method
-        const requestData = {
-            method: method
-        };
-
-        // Only send relevant data based on selected method
+        const requestData = { method };
         if (method === 'email') {
             requestData.email = document.getElementById('email').value;
-        } else { // whatsapp or miscall
+        } else {
             requestData.phone_number = this.currentPhoneNumber;
         }
 
-        // Show loading
         Swal.fire({
             title: 'Memeriksa data...',
             text: 'Mohon tunggu sebentar...',
@@ -265,7 +213,6 @@ Alpine.store('payment', {
             }
         });
 
-        // Check if user exists with this specific verification method
         fetch('/check-user-exists', {
             method: 'POST',
             headers: {
@@ -277,13 +224,10 @@ Alpine.store('payment', {
             .then(response => response.json())
             .then(data => {
                 Swal.close();
-
                 if (data.exists) {
-                    // User exists with this method, show login prompt
                     const message = method === 'email' ?
                         'Email ini sudah terdaftar. Silakan login untuk melanjutkan.' :
                         'Nomor telepon ini sudah terdaftar. Silakan login untuk melanjutkan.';
-
                     Swal.fire({
                         title: 'Akun sudah terdaftar',
                         text: message,
@@ -299,22 +243,14 @@ Alpine.store('payment', {
                         }
                     });
                 } else {
-                    // User doesn't exist with this method, proceed with verification
                     this.showVerificationMethodModal = false;
-
-                    // Clear verification code digits
                     this.verificationCodeDigits = ['', '', '', '', '', ''];
-
-                    // Send verification code
                     window.sendVerificationCode(method,
                         document.getElementById('phone_number').value,
                         document.getElementById('email').value,
                         () => {
-                            // Success callback - show code entry modal and start timer
                             this.showVerificationCodeModal = true;
                             this.startVerificationTimer();
-
-                            // Focus the first digit input
                             setTimeout(() => {
                                 const inputs = document.querySelectorAll('.verification-code-input input');
                                 if (inputs.length > 0) inputs[0].focus();
@@ -336,14 +272,10 @@ Alpine.store('payment', {
     },
 
     startVerificationTimer() {
-        // Reset timer
         clearInterval(this.verificationTimer);
-        this.verificationCountdown = 86; // 1:26 in seconds
-
-        // Start countdown
+        this.verificationCountdown = 86;
         this.verificationTimer = setInterval(() => {
             this.verificationCountdown--;
-
             if (this.verificationCountdown <= 0) {
                 clearInterval(this.verificationTimer);
             }
@@ -357,21 +289,14 @@ Alpine.store('payment', {
     },
 
     onDigitInput(index, event) {
-        // Get the digit
         const digit = event.target.value;
-
-        // If not a digit, clear the input and return
         if (!/^[0-9]$/.test(digit)) {
             event.target.value = '';
             this.verificationCodeDigits[index] = '';
             return;
         }
-
-        // Store the digit - ensure we're updating the array properly
         this.verificationCodeDigits[index] = digit;
         console.log("Updated digits array:", this.verificationCodeDigits);
-
-        // Move to next input if available
         if (index < 5 && digit !== '') {
             const inputs = document.querySelectorAll('.verification-code-input input');
             if (inputs.length > index + 1) {
@@ -381,7 +306,6 @@ Alpine.store('payment', {
     },
 
     onDigitKeydown(index, event) {
-        // Handle backspace - move to previous input
         if (event.key === 'Backspace') {
             if (this.verificationCodeDigits[index] === '') {
                 if (index > 0) {
@@ -395,15 +319,12 @@ Alpine.store('payment', {
                 this.verificationCodeDigits[index] = '';
             }
         }
-
-        // Move focus with arrow keys
         if (event.key === 'ArrowLeft' && index > 0) {
             const inputs = document.querySelectorAll('.verification-code-input input');
             if (inputs.length > index - 1) {
                 inputs[index - 1].focus();
             }
         }
-
         if (event.key === 'ArrowRight' && index < 5) {
             const inputs = document.querySelectorAll('.verification-code-input input');
             if (inputs.length > index + 1) {
@@ -415,12 +336,10 @@ Alpine.store('payment', {
     submitVerificationCode() {
         console.log("Verification code digits:", this.verificationCodeDigits);
 
-        // Ensure verificationCodeDigits exists and is properly initialized
         if (!this.verificationCodeDigits || !Array.isArray(this.verificationCodeDigits)) {
             this.verificationCodeDigits = ['', '', '', '', '', ''];
         }
 
-        // Get directly from input fields as a backup if the array is not working
         if (this.verificationCodeDigits.every(d => d === '')) {
             const inputs = document.querySelectorAll('.verification-code-input input');
             if (inputs && inputs.length === 6) {
@@ -432,7 +351,6 @@ Alpine.store('payment', {
 
         console.log("Final verification code digits:", this.verificationCodeDigits);
 
-        // Check if all digits are filled
         const allFilled = this.verificationCodeDigits.every(d => d !== '' && d !== null && d !== undefined);
         if (!allFilled) {
             Swal.fire({
@@ -445,11 +363,9 @@ Alpine.store('payment', {
             return;
         }
 
-        // Get verification code
         const verificationCode = this.verificationCodeDigits.join('');
         console.log("Submitting verification code:", verificationCode);
 
-        // Show loading
         Swal.fire({
             title: 'Memverifikasi kode',
             text: 'Mohon tunggu sebentar...',
@@ -460,18 +376,13 @@ Alpine.store('payment', {
             }
         });
 
-        // Get form data for creating user if needed
         const formData = new FormData(document.getElementById('paymentForm'));
-
-        // Add verification code and method
         formData.append('verification_code', verificationCode);
         formData.append('verification_method', this.selectedMethod);
 
-        // Get CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        // Send to verify-and-book endpoint
-        fetch('/verify-and-book', {
+        fetch('/book', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrfToken
@@ -489,37 +400,41 @@ Alpine.store('payment', {
             .then(data => {
                 Swal.close();
                 if (data.success) {
-                    // Close the verification modal
                     this.showVerificationCodeModal = false;
-
-                    // Store verification info in hidden inputs for form submission
-                    const codeInput = document.createElement('input');
-                    codeInput.type = 'hidden';
-                    codeInput.name = 'verification_code';
-                    codeInput.value = verificationCode;
-
-                    const methodInput = document.createElement('input');
-                    methodInput.type = 'hidden';
-                    methodInput.name = 'verification_method';
-                    methodInput.value = this.selectedMethod;
-
-                    // Add inputs to form
-                    const form = document.getElementById('paymentForm');
-                    form.appendChild(codeInput);
-                    form.appendChild(methodInput);
-
-                    // Show success message and handle submission after
-                    Swal.fire({
-                        title: 'Verifikasi Berhasil',
-                        text: 'Memproses pembayaran...',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        didClose: () => {
-                            Alpine.store('cart').clearCart();
-                            form.submit();
-                        }
-                    });
+                    if (data.snapToken) {
+                        window.snap.pay(data.snapToken, {
+                            onSuccess: function (result) {
+                                console.log('Payment success:', result);
+                                Alpine.store('cart').clearCart();
+                                window.location.href = "{{ route('home') }}";
+                            },
+                            onPending: function (result) {
+                                console.log('Payment pending:', result);
+                                window.location.href = "{{ route('home') }}";
+                            },
+                            onError: function (result) {
+                                console.log('Payment error:', result);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Terjadi kesalahan saat pembayaran.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#DC2626',
+                                    confirmButtonText: 'OK'
+                                });
+                            },
+                            onClose: function () {
+                                console.log('Payment popup closed');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Token pembayaran tidak tersedia.',
+                            icon: 'error',
+                            confirmButtonColor: '#DC2626',
+                            confirmButtonText: 'OK'
+                        });
+                    }
                 } else {
                     Swal.fire({
                         title: 'Verifikasi Gagal',
@@ -544,14 +459,11 @@ Alpine.store('payment', {
 
     resendVerificationCode() {
         if (this.verificationCountdown > 0) return;
-
-        // Call the external function to resend the code
         window.sendVerificationCode(
             this.selectedMethod,
             document.getElementById('phone_number').value,
             document.getElementById('email').value,
             () => {
-                // Reset timer on success
                 this.startVerificationTimer();
             }
         );

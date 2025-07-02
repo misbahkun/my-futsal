@@ -82,7 +82,7 @@
                                     Amount (Rp)
                                 </label>
                                 <input type="number" name="amount" value="{{ old('amount', $transaction->amount) }}"
-                                    required placeholder="Enter amount" disabled
+                                    required disabled
                                     class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
                                 <!-- Hidden field to keep the value when form is submitted -->
                                 <input type="hidden" name="amount" value="{{ old('amount', $transaction->amount) }}" />
@@ -98,14 +98,12 @@
                                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                     Payment Type
                                 </label>
-                                <select name="payment_type" required
-                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                    <option value="">Select Payment Type</option>
-                                    <option value="online" {{ $transaction->payment_type == 'online' ? 'selected' : '' }}>
-                                        Online</option>
-                                    <option value="on_site"
-                                        {{ $transaction->payment_type == 'on_site' ? 'selected' : '' }}>On Site</option>
-                                </select>
+                                <input type="payment_type" name="payment_type"
+                                    value="{{ old('payment_type', $transaction->payment_type) }}" required disabled
+                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                <!-- Hidden field to keep the value when form is submitted -->
+                                <input type="hidden" name="payment_type"
+                                    value="{{ old('payment_type', $transaction->payment_type) }}" />
                                 @error('payment_type')
                                     <span class="text-sm text-error-500">{{ $message }}</span>
                                 @enderror
@@ -116,19 +114,12 @@
                                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                     Payment Method
                                 </label>
-                                <select name="payment_method" required
-                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                    <option value="">Select Payment Method</option>
-                                    @foreach ($banks as $bank)
-                                        <option value="{{ $bank->name }}"
-                                            {{ strtolower($transaction->payment_method) == strtolower($bank->name) ? 'selected' : '' }}>
-                                            {{ $bank->name }}
-                                        </option>
-                                    @endforeach
-                                    <option value="Cash" {{ $transaction->payment_method == 'Cash' ? 'selected' : '' }}>
-                                        Cash
-                                    </option>
-                                </select>
+                                <input type="payment_method" name="payment_method"
+                                    value="{{ old('payment_method', $transaction->payment_method) }}" required disabled
+                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                <!-- Hidden field to keep the value when form is submitted -->
+                                <input type="hidden" name="payment_method"
+                                    value="{{ old('payment_method', $transaction->payment_method) }}" />
                                 @error('payment_method')
                                     <span class="text-sm text-error-500">{{ $message }}</span>
                                 @enderror
@@ -141,41 +132,13 @@
                                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                     Status
                                 </label>
-                                <select name="status" required
-                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                    <option value="">Select Status</option>
-                                    <option value="unpaid" {{ $transaction->status == 'unpaid' ? 'selected' : '' }}>Unpaid
-                                    </option>
-                                    <option value="pending_verification"
-                                        {{ $transaction->status == 'pending_verification' ? 'selected' : '' }}>Pending
-                                        Verification</option>
-                                    <option value="paid" {{ $transaction->status == 'paid' ? 'selected' : '' }}>Paid
-                                    </option>
-                                    <option value="cancelled" {{ $transaction->status == 'cancelled' ? 'selected' : '' }}>
-                                        Cancelled</option>
-                                </select>
+                                <input type="status" name="status"
+                                    value="{{ old('status', $transaction->status) }}" required disabled
+                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                <!-- Hidden field to keep the value when form is submitted -->
+                                <input type="hidden" name="status"
+                                    value="{{ old('status', $transaction->status) }}" />
                                 @error('status')
-                                    <span class="text-sm text-error-500">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- Payment Proof -->
-                            <div>
-                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    Payment Proof
-                                </label>
-                                <input type="file" name="payment_proof"
-                                    class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-
-                                @if ($transaction->payment_proof)
-                                    <div class="mt-5 flex flex-col w-fit">
-                                        <span class="text-lg font-bold mb-3 text-gray-500 mr-2 dark:text-white">Foto Bukti
-                                            Pembayaran:</span>
-                                        <img src="{{ Storage::url($transaction->payment_proof) }}" class="object-fit-cover" alt="foto bukti pembayaran">
-                                    </div>
-                                @endif
-
-                                @error('payment_proof')
                                     <span class="text-sm text-error-500">{{ $message }}</span>
                                 @enderror
                             </div>

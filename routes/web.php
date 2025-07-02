@@ -45,11 +45,13 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('homeDashboard');
-        
+
         // Add search route for transactions
         Route::get('/search-transactions', [DashboardController::class, 'searchTransactions'])->name('dashboard.search-transactions');
         Route::get('/transactions/search', [TransactionController::class, 'search'])->name('admin.transactions.search');
-        
+        Route::get('/schedule-chart-data', [DashboardController::class, 'scheduleChartData'])->name('dashboard.schedule-chart-data');
+        Route::get('/booking-details-by-date', [DashboardController::class, 'getBookingDetailsForDate'])->name('dashboard.booking-details-by-date');
+
         Route::get('/users', [UsersController::class, 'index'])->name('admin.users');
         Route::post('/users', [UsersController::class, 'store'])->name('admin.users.store');
         Route::put('/users/{id}', [UsersController::class, 'update'])->name('admin.users.update');
@@ -65,15 +67,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/book', [BookingController::class, 'book'])->name('book');
-    Route::get('/payment/{transactionId}', [BookingController::class, 'showPaymentConfirmation'])->name('paymentDetail');
-    Route::post('/upload-payment/{transactionId}', [BookingController::class, 'uploadPayment'])->name('uploadPayment');
-
-    Route::get('/payment/pending/{transactionId}', [PaymentController::class, 'showPaymentPending'])->name('payment.pending');
-    Route::get('/payment/check-status/{transactionId}', [PaymentController::class, 'checkPaymentStatus'])->name('check-payment-status');
-    Route::get('/payment/change-method/{transactionId}', [PaymentController::class, 'changePaymentMethod'])->name('change-payment-method');
-    Route::post('/payment/update-method/{transactionId}', [PaymentController::class, 'updatePaymentMethod'])->name('update-payment-method');
-    Route::post('/payment/cancel/{transactionId}', [PaymentController::class, 'cancelTransactionManually'])->name('cancel-transaction');
-    Route::post('/payment/{transactionId}/upload-proof', [PaymentController::class, 'uploadPaymentProof'])->name('payment.upload-proof');
+    // Midtrans callback routes
+    Route::get('/payment/retry/{transactionId}', [PaymentController::class, 'retryPayment'])->name('payment.retry');
 
     // Invoice routes
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('user.invoices');
@@ -81,6 +76,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoice/{transactionId}', [InvoiceController::class, 'showInvoice'])->name('invoice');
     Route::get('/invoice/{transactionId}/pdf', [InvoiceController::class, 'generateInvoicePdf'])->name('generate.invoice.pdf');
 });
+
+// notification from midtrans
+Route::post('/payment/midtrans-callback', [PaymentController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
 // Booking and payment routes
 Route::post('/checkout/payment', [BookingController::class, 'checkout'])->name('checkoutPayment');

@@ -242,37 +242,6 @@
                         </div>
                     @endif
 
-                    <!-- Payment Proof (if available) -->
-                    @if ($transaction->payment_proof)
-                        <div class="mt-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-5">
-                            <h4 class="text-lg font-medium text-gray-800 dark:text-white/90 mb-4">Payment Proof</h4>
-
-                            <div class="flex items-start gap-4">
-                                <a href="{{ Storage::url($transaction->payment_proof) }}" target="_blank"
-                                    class="block max-w-xs">
-                                    <img src="{{ Storage::url($transaction->payment_proof) }}" alt="Payment Proof"
-                                        class="rounded-md border border-gray-200 dark:border-gray-700">
-                                </a>
-
-                                <div class="space-y-2">
-                                    <a href="{{ Storage::url($transaction->payment_proof) }}" target="_blank" download
-                                        class="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-opacity-90">
-                                        <svg class="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd"
-                                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                        Download
-                                    </a>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        Uploaded: {{ date('d F Y, H:i', strtotime($transaction->updated_at)) }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
                     <!-- Action Buttons -->
                     <div class="flex justify-between items-center mt-6">
                         <a href="{{ route('admin.transactions') }}"
