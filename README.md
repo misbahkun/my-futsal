@@ -23,7 +23,7 @@ My-Futsal adalah aplikasi web untuk manajemen penyewaan lapangan futsal, transak
 
 ## Fitur Utama
 
--   **Booking & Transaksi:** Pemesanan jadwal, pembayaran, dan invoice otomatis.
+- **Booking & Transaksi:** Pemesanan jadwal, pembayaran via Midtrans (payment gateway) atau transfer manual, dan invoice otomatis.
 -   **Manajemen User:** Admin & user, autentikasi, profil, dan pengelolaan akun.
 -   **Dashboard Admin:** Statistik transaksi, booking, dan laporan keuangan.
 -   **Export Data:** Ekspor invoice dan transaksi ke Excel/PDF.
@@ -64,8 +64,8 @@ REST API (untuk AJAX/Alpine.js)
 1. **User** mendaftar/login.
 2. **User** memilih venue & lapangan, lalu melakukan booking.
 3. Sistem menampilkan jadwal & harga, user memilih waktu.
-4. **User** melakukan pembayaran (transfer/manual).
-5. **Admin** memverifikasi pembayaran.
+4. **User** melakukan pembayaran melalui Midtrans (payment gateway) atau transfer manual.
+5. Sistem memverifikasi pembayaran Midtrans secara otomatis melalui notifikasi server; pembayaran manual diverifikasi oleh admin.
 6. Sistem meng-generate **invoice**.
 7. **User/Admin** dapat melihat riwayat transaksi dan invoice.
 
