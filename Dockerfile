@@ -9,13 +9,7 @@ RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
 
-FROM composer:2 AS composer_builder
-WORKDIR /var/www/html
-
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --no-dev --optimize-autoloader
-
-FROM php:8.3-fpm
+FROM php:8.3-fpm AS base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -49,8 +43,15 @@ WORKDIR /var/www/html
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+FROM base AS vendor_builder
+
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --no-dev --optimize-autoloader
+
+FROM base
+
 COPY . /var/www/html
-COPY --from=composer_builder /var/www/html/vendor /var/www/html/vendor
+COPY --from=vendor_builder /var/www/html/vendor /var/www/html/vendor
 COPY --from=node_builder /app/public /var/www/html/public
 
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
@@ -58,7 +59,8 @@ COPY docker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN rm -f /etc/nginx/sites-enabled/* \
+RUN rm -f /usr/bin/composer \
+    && rm -f /etc/nginx/sites-enabled/* \
     && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default \
     && chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R www-data:www-data /var/www/html \
