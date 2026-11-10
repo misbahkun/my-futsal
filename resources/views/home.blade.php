@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'HJ Muriyah Futsal - Booking Lapangan Futsal Online')
+
 @section('header')
     @include('components.navbar')
     <img class="fixed top-16 z-10 shadow-lg w-full" src="{{ asset('storage/stick.png') }}" alt="stick" class="w-full">
