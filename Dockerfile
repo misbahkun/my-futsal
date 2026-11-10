@@ -23,12 +23,16 @@ RUN apt-get update \
         supervisor \
         curl \
         libpng-dev \
+        libjpeg62-turbo-dev \
+        libfreetype6-dev \
+        libicu-dev \
         libonig-dev \
         libxml2-dev \
         libzip-dev \
         zip \
         unzip \
         mariadb-client \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo_mysql \
         mbstring \
