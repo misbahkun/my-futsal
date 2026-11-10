@@ -1,0 +1,39 @@
+services:
+  app:
+    image: ghcr.io/misbahkun/my-futsal:latest
+    container_name: my-futsal
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:20141:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app-storage:/var/www/html/storage
+
+  db:
+    image: mariadb:10.11
+    container_name: my-futsal-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  app-storage:
+  db-data:
